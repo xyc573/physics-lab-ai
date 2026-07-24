@@ -14,7 +14,8 @@ import {
   Circle,
   Filter,
   Sparkles,
-  QrCode
+  QrCode,
+  Settings
 } from 'lucide-react';
 import { experiments } from '../data/experiments';
 import { categoryLabels, difficultyLabels, difficultyColors } from '../types/experiment';
@@ -100,6 +101,14 @@ const Home = () => {
               <p className="text-xs text-primary-200 mt-1">智能批改解析</p>
             </div>
           </div>
+          
+          <Link
+            to="/manager"
+            className="inline-flex items-center gap-2 mt-6 px-4 py-2 bg-white/10 hover:bg-white/20 backdrop-blur-sm rounded-lg text-sm text-white/80 hover:text-white transition"
+          >
+            <Settings size={16} />
+            教师入口 · 题库管理
+          </Link>
         </div>
       </section>
 

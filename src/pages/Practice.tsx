@@ -84,7 +84,7 @@ const Practice = () => {
       const images = contentRef.current.querySelectorAll('.question-html img.formula-inline');
       images.forEach(img => {
         const htmlImg = img as HTMLImageElement;
-        if (htmlImg.naturalWidth > 120) {
+        if (htmlImg.naturalWidth > 300) {
           htmlImg.classList.add('formula-block');
         }
       });
