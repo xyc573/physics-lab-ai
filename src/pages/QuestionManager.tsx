@@ -60,6 +60,8 @@ const QuestionManager = () => {
   const [multipleAnswers, setMultipleAnswers] = useState<string[]>([]);
   const [explanation, setExplanation] = useState('');
   const [knowledgePoints, setKnowledgePoints] = useState('');
+  const [questionImages, setQuestionImages] = useState<string[]>([]);
+  const [formulaImages, setFormulaImages] = useState<{key: string; src: string}[]>([]);
 
   const saveCustomToStorage = (data: Question[]) => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
@@ -132,6 +134,50 @@ const QuestionManager = () => {
       .replace(/\n/g, '<br/>');
   };
 
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleQuestionImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newImages: string[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const b64 = await fileToBase64(files[i]);
+      newImages.push(b64);
+    }
+    setQuestionImages(prev => [...prev, ...newImages]);
+    e.target.value = '';
+  };
+
+  const handleFormulaImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    const newFormulas: {key: string; src: string}[] = [];
+    for (let i = 0; i < files.length; i++) {
+      const b64 = await fileToBase64(files[i]);
+      newFormulas.push({
+        key: `formula_${Date.now()}_${i}`,
+        src: b64
+      });
+    }
+    setFormulaImages(prev => [...prev, ...newFormulas]);
+    e.target.value = '';
+  };
+
+  const removeQuestionImage = (index: number) => {
+    setQuestionImages(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const removeFormulaImage = (index: number) => {
+    setFormulaImages(prev => prev.filter((_, i) => i !== index));
+  };
+
   const resetForm = () => {
     setContent('');
     setAnswer('');
@@ -143,15 +189,27 @@ const QuestionManager = () => {
     setQuestionType('fill');
     setExperimentId(experiments[0].id);
     setDifficulty('medium');
+    setQuestionImages([]);
+    setFormulaImages([]);
   };
 
   const buildQuestion = (): Question | null => {
     if (!content.trim()) return null;
     
     const id = editingId || generateId();
-    const contentHtml = `<p>${escapeHtml(content)}</p>`;
-    const answerHtml = `<p>${escapeHtml(answer)}</p>`;
-    const explanationHtml = explanation ? `<p>${escapeHtml(explanation)}</p>` : '';
+    
+    let contentHtml = `<p>${escapeHtml(content)}</p>`;
+    questionImages.forEach((img, i) => {
+      contentHtml += `<p><img src="${img}" alt="题目配图${i + 1}" class="question-figure" /></p>`;
+    });
+    formulaImages.forEach(f => {
+      contentHtml += `<img src="${f.src}" alt="" class="formula-inline" />`;
+    });
+    
+    let answerHtml = `<p>${escapeHtml(answer)}</p>`;
+    
+    let explanationHtml = explanation ? `<p>${escapeHtml(explanation)}</p>` : '';
+    
     const kpList = knowledgePoints
       .split(/[,，、]/)
       .map(s => s.trim())
@@ -169,8 +227,8 @@ const QuestionManager = () => {
       explanation: explanation.trim(),
       explanationHtml,
       knowledgePoints: kpList,
-      images: [],
-      hasFormula: false,
+      images: questionImages.length > 0 ? questionImages : [],
+      hasFormula: formulaImages.length > 0,
     };
 
     if (questionType === 'single' || questionType === 'multiple') {
@@ -223,6 +281,24 @@ const QuestionManager = () => {
     setExplanation(q.explanation);
     setKnowledgePoints(q.knowledgePoints.join('、'));
     setOptions(q.options || ['', '', '', '']);
+    
+    const imgs: string[] = [];
+    const formulas: {key: string; src: string}[] = [];
+    if (q.contentHtml) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(q.contentHtml, 'text/html');
+      doc.querySelectorAll('img').forEach(img => {
+        const src = img.getAttribute('src') || '';
+        if (img.classList.contains('formula-inline')) {
+          formulas.push({ key: `formula_${Date.now()}_${Math.random()}`, src });
+        } else {
+          imgs.push(src);
+        }
+      });
+    }
+    setQuestionImages(imgs);
+    setFormulaImages(formulas);
+    
     setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -644,6 +720,65 @@ const QuestionManager = () => {
                 placeholder="例如：胡克定律, 弹簧弹力, 劲度系数"
                 className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary-600 mb-2">题目配图（可选）</label>
+              <div className="flex flex-wrap gap-3 mb-3">
+                {questionImages.map((img, i) => (
+                  <div key={i} className="relative group">
+                    <img src={img} alt={`配图${i + 1}`} className="w-24 h-24 object-cover rounded-lg border border-slate-200" />
+                    <button
+                      onClick={() => removeQuestionImage(i)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition cursor-pointer font-medium">
+                <Upload size={18} />
+                上传题目配图
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleQuestionImageUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-primary-600 mb-2">公式图片（可选）</label>
+              <div className="flex flex-wrap gap-3 mb-3">
+                {formulaImages.map((f, i) => (
+                  <div key={f.key} className="relative group">
+                    <img src={f.src} alt={`公式${i + 1}`} className="h-12 object-contain rounded-lg border border-slate-200 bg-white px-3 py-2" />
+                    <button
+                      onClick={() => removeFormulaImage(i)}
+                      className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+              <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition cursor-pointer font-medium">
+                <Upload size={18} />
+                上传公式图片
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFormulaImageUpload}
+                  className="hidden"
+                />
+              </label>
+              <p className="text-xs text-slate-500 mt-2">
+                💡 提示：上传的公式图片会自动添加到题目末尾。如果需要调整位置，可导出JSON后手动编辑。
+              </p>
             </div>
 
             <div className="flex gap-3 pt-2">
