@@ -8,6 +8,7 @@ export const experiments: Experiment[] = [
     difficulty: 'easy',
     description: '通过实验探究弹簧弹力与形变量之间的关系，验证胡克定律。',
     icon: 'spring',
+    videoUrl: 'https://www.bilibili.com/video/BV1Mw411Z7CX/',
     preview: {
       middleSchoolConnection: [
         '初中已学习力的概念和力的三要素',
@@ -82,6 +83,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '利用单摆周期公式测量当地的重力加速度g值。',
     icon: 'pendulum',
+    videoUrl: 'https://www.bilibili.com/video/BV1tD421V7cK/',
     preview: {
       middleSchoolConnection: [
         '初中已学习摆的等时性原理',
@@ -156,6 +158,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过实验探究平抛运动的规律，分解为水平方向匀速直线运动和竖直方向自由落体运动。',
     icon: 'target',
+    videoUrl: 'https://www.bilibili.com/video/BV1mV411H7wX/',
     preview: {
       middleSchoolConnection: [
         '初中已学习匀速直线运动和变速直线运动',
@@ -228,6 +231,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '测量金属丝的电阻率，学习伏安法测电阻的方法。',
     icon: 'zap',
+    videoUrl: 'https://www.bilibili.com/video/BV1wr9BB7ECd/',
     preview: {
       middleSchoolConnection: [
         '初中已学习欧姆定律 I = U/R',
@@ -308,6 +312,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '用插针法测量玻璃的折射率，理解光的折射定律。',
     icon: 'sun',
+    videoUrl: 'https://www.bilibili.com/video/BV1kK4y1S7kt/',
     preview: {
       middleSchoolConnection: [
         '初中已学习光的直线传播',
@@ -379,6 +384,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '探究等温过程中一定质量理想气体的压强与体积的关系（玻意耳定律）。',
     icon: 'thermometer',
+    videoUrl: 'https://www.bilibili.com/video/BV1dV4y1U7UF/',
     preview: {
       middleSchoolConnection: [
         '初中已学习大气压强的概念',
@@ -445,6 +451,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过传感器将非电学量转换为电学量，结合继电器等元件制作自动控制装置，体验现代技术在生活中的应用。',
     icon: 'cpu',
+    videoUrl: 'https://www.bilibili.com/video/BV1tQ4y137rc/',
     preview: {
       middleSchoolConnection: [
         '初中已学习简单电路的组成和连接',
@@ -517,6 +524,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过实验探究两个互成角度的共点力的合成规律，验证平行四边形定则。',
     icon: 'merge',
+    videoUrl: 'https://www.bilibili.com/video/BV1zd1WYQE5t/',
     preview: {
       middleSchoolConnection: [
         '初中已学习力的概念和力的图示',
@@ -662,6 +670,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过实验探究理想变压器原、副线圈两端电压与匝数的关系，理解变压器的工作原理。',
     icon: 'zap',
+    videoUrl: 'https://www.bilibili.com/video/BV1nh4y197Rt/',
     preview: {
       middleSchoolConnection: [
         '初中已学习电磁感应现象',
@@ -735,6 +744,7 @@ export const experiments: Experiment[] = [
     difficulty: 'hard',
     description: '通过控制变量法探究向心力大小与圆周运动的半径、角速度、物体质量之间的关系，验证向心力公式。',
     icon: 'rotate-cw',
+    videoUrl: 'https://www.bilibili.com/video/BV11h4y1x7Xu/',
     preview: {
       middleSchoolConnection: [
         '初中已学习圆周运动的初步概念',
@@ -808,6 +818,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过打点计时器记录小车运动情况，分析纸带上的点迹，研究小车速度随时间变化的规律。',
     icon: 'trending-up',
+    videoUrl: 'https://www.bilibili.com/video/BV1xG411P7B1/',
     preview: {
       middleSchoolConnection: [
         '初中已学习速度的概念和公式v = s/t',
@@ -881,6 +892,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过实验探究电磁感应现象，理解产生感应电流的条件，加深对磁通量变化的认识。',
     icon: 'zap',
+    videoUrl: 'https://www.bilibili.com/video/BV1QP4y1Q7Qd/',
     preview: {
       middleSchoolConnection: [
         '初中已学习电流的磁效应（奥斯特实验）',
@@ -954,6 +966,7 @@ export const experiments: Experiment[] = [
     difficulty: 'hard',
     description: '通过杨氏双缝干涉实验，测量单色光的波长，理解光的波动性。',
     icon: 'waves',
+    videoUrl: 'https://www.bilibili.com/video/BV15VPFzEEH9/',
     preview: {
       middleSchoolConnection: [
         '初中已学习光的直线传播',
@@ -1246,6 +1259,7 @@ export const experiments: Experiment[] = [
     difficulty: 'medium',
     description: '通过实验观察电容器的充电和放电过程，理解电容器的储能特性，探究RC电路的时间常数。',
     icon: 'battery-charging',
+    videoUrl: 'https://www.bilibili.com/video/BV1Up4y1d7jd/',
     preview: {
       middleSchoolConnection: [
         '初中已学习简单的电路组成',
@@ -1319,6 +1333,7 @@ export const experiments: Experiment[] = [
     difficulty: 'easy',
     description: '学习使用刻度尺、游标卡尺和螺旋测微器测量长度，理解不同测量工具的原理和精度，掌握正确的读数方法。',
     icon: 'ruler',
+    videoUrl: 'https://www.bilibili.com/video/BV12w411K71a/',
     preview: {
       middleSchoolConnection: [
         '初中已学习刻度尺的使用和读数方法',
@@ -1397,6 +1412,7 @@ export const experiments: Experiment[] = [
     difficulty: 'hard',
     description: '通过气垫导轨上的滑块碰撞实验，验证动量守恒定律，理解动量守恒的条件。',
     icon: 'arrow-right-left',
+    videoUrl: 'https://www.bilibili.com/video/BV17G4y1F7b7/',
     preview: {
       middleSchoolConnection: [
         '初中已学习力是物体对物体的作用',

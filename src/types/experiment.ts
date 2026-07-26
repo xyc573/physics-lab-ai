@@ -28,6 +28,7 @@ export interface Experiment {
   difficulty: Difficulty;
   description: string;
   icon: string;
+  videoUrl?: string;
   preview: {
     middleSchoolConnection: string[];
     principles: Principle[];

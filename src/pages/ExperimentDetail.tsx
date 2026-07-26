@@ -9,7 +9,9 @@ import {
   Zap,
   Sun,
   Thermometer,
-  Atom
+  Atom,
+  Video,
+  ExternalLink
 } from 'lucide-react';
 import { getExperimentById } from '../data/experiments';
 import { categoryLabels, difficultyLabels, difficultyColors } from '../types/experiment';
@@ -105,6 +107,18 @@ const ExperimentDetail = () => {
           </div>
           <h1 className="text-3xl font-bold mb-3 font-display">{experiment.name}</h1>
           <p className="text-primary-100 max-w-2xl">{experiment.description}</p>
+          {experiment.videoUrl && (
+            <a
+              href={experiment.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-xl text-white font-medium transition hover:scale-105 active:scale-95"
+            >
+              <Video size={20} />
+              观看实验演示视频
+              <ExternalLink size={16} />
+            </a>
+          )}
         </div>
       </div>
 
