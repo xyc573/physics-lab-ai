@@ -82,6 +82,14 @@ export const experimentVideos: Record<string, VideoItem[]> = {
     { title: '伽利略斜面实验（冲淡重力）', url: 'https://www.bilibili.com/video/BV1514y1W7Qj/' },
     { title: '牛顿管（羽毛、金属片自由落体对比）', url: 'https://www.bilibili.com/video/BV1qD4y1s7GY/' },
   ],
+  'emf-internal-resistance': [
+    { title: '伏安法测小灯泡伏安特性曲线', url: 'https://www.bilibili.com/video/BV1wr9BB7ECd/' },
+    { title: '观察电容器充、放电现象', url: 'https://www.bilibili.com/video/BV1Up4y1d7jd/' },
+  ],
+  'multimeter': [
+    { title: '伏安法测小灯泡伏安特性曲线', url: 'https://www.bilibili.com/video/BV1wr9BB7ECd/' },
+    { title: '探究平行板电容器电容影响因素', url: 'https://www.bilibili.com/video/BV1fU4y137fM/' },
+  ],
 };
 
 export const getVideosForExperiment = (experimentId: string): VideoItem[] => {
