@@ -34,11 +34,6 @@ const VideoLibrary = () => {
     return url;
   };
 
-  const getBilibiliBvid = (url: string) => {
-    const bvMatch = url.match(/\/video\/(BV[a-zA-Z0-9]+)/);
-    return bvMatch ? bvMatch[1] : '';
-  };
-
   const filteredVideos = useMemo(() => {
     let videos = demoVideos;
     
@@ -157,20 +152,19 @@ const VideoLibrary = () => {
                       onClick={() => setCurrentVideo(video)}
                       className="group cursor-pointer bg-white rounded-xl overflow-hidden border border-gray-100 shadow-sm hover:shadow-lg hover:border-purple-200 transition-all duration-300 hover:-translate-y-1"
                     >
-                      <div className="relative aspect-video bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-                        <img
-                          src={`https://i0.hdslb.com/bfs/archive/${getBilibiliBvid(video.url)}.jpg`}
-                          alt={video.title}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors flex items-center justify-center">
-                          <div className="w-14 h-14 rounded-full bg-white/90 flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transform scale-75 group-hover:scale-100 transition-all duration-300">
-                            <Play size={24} className="text-purple-600 ml-1" />
+                      <div className="relative aspect-video bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 overflow-hidden">
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/30">
+                            <Play size={28} className="text-white ml-1" />
                           </div>
                         </div>
+                        <div className="absolute bottom-3 left-3 right-3">
+                          <span className="inline-block px-2 py-0.5 bg-white/20 backdrop-blur-sm rounded text-white text-xs">
+                            Bilibili
+                          </span>
+                        </div>
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors" />
                       </div>
                       <div className="p-4">
                         <h4 className="text-sm font-medium text-gray-800 line-clamp-2 leading-snug group-hover:text-purple-600 transition-colors">
