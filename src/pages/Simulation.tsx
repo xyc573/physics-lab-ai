@@ -9,6 +9,21 @@ import ProjectileSimulation from '../components/simulation/ProjectileSimulation'
 import CircuitSimulation from '../components/simulation/CircuitSimulation';
 import RefractionSimulation from '../components/simulation/RefractionSimulation';
 import GasSimulation from '../components/simulation/GasSimulation';
+import CentripetalForceSimulation from '../components/simulation/CentripetalForceSimulation';
+import MomentumSimulation from '../components/simulation/MomentumSimulation';
+import MechanicalEnergySimulation from '../components/simulation/MechanicalEnergySimulation';
+import InterferenceSimulation from '../components/simulation/InterferenceSimulation';
+import OilFilmSimulation from '../components/simulation/OilFilmSimulation';
+import LengthMeasurementSimulation from '../components/simulation/LengthMeasurementSimulation';
+import MultimeterSimulation from '../components/simulation/MultimeterSimulation';
+import SensorSimulation from '../components/simulation/SensorSimulation';
+import ForceCompositionSimulation from '../components/simulation/ForceCompositionSimulation';
+import AccelerationSimulation from '../components/simulation/AccelerationSimulation';
+import VelocityTimeSimulation from '../components/simulation/VelocityTimeSimulation';
+import CapacitorSimulation from '../components/simulation/CapacitorSimulation';
+import EmfSimulation from '../components/simulation/EmfSimulation';
+import InductionSimulation from '../components/simulation/InductionSimulation';
+import TransformerSimulation from '../components/simulation/TransformerSimulation';
 
 const simulationComponents: Record<string, React.ComponentType<{ params: Record<string, number>; isRunning: boolean; onReset: () => void; onParamChange?: (key: string, value: number) => void }>> = {
   spring: SpringSimulation,
@@ -17,6 +32,21 @@ const simulationComponents: Record<string, React.ComponentType<{ params: Record<
   circuit: CircuitSimulation,
   refraction: RefractionSimulation,
   gas: GasSimulation,
+  centripetal: CentripetalForceSimulation,
+  momentum: MomentumSimulation,
+  energy: MechanicalEnergySimulation,
+  interference: InterferenceSimulation,
+  oilfilm: OilFilmSimulation,
+  length: LengthMeasurementSimulation,
+  multimeter: MultimeterSimulation,
+  sensor: SensorSimulation,
+  force: ForceCompositionSimulation,
+  acceleration: AccelerationSimulation,
+  velocity: VelocityTimeSimulation,
+  capacitor: CapacitorSimulation,
+  emf: EmfSimulation,
+  induction: InductionSimulation,
+  transformer: TransformerSimulation,
 };
 
 const Simulation = () => {
