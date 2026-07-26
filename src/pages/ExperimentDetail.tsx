@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { 
   BookOpen, 
@@ -11,7 +12,8 @@ import {
   Thermometer,
   Atom,
   Video,
-  ExternalLink
+  X,
+  Maximize2
 } from 'lucide-react';
 import { getExperimentById } from '../data/experiments';
 import { categoryLabels, difficultyLabels, difficultyColors } from '../types/experiment';
@@ -32,6 +34,15 @@ const ExperimentDetail = () => {
   const navigate = useNavigate();
   const experiment = getExperimentById(id);
   const getRecord = useLearningStore(state => state.getRecord);
+  const [showVideo, setShowVideo] = useState(false);
+  
+  const getBilibiliEmbedUrl = (url: string) => {
+    const bvMatch = url.match(/\/video\/(BV[a-zA-Z0-9]+)/);
+    if (bvMatch) {
+      return `https://player.bilibili.com/player.html?bvid=${bvMatch[1]}&autoplay=1&high_quality=1&danmaku=0`;
+    }
+    return url;
+  };
   
   if (!experiment) {
     return (
@@ -108,16 +119,14 @@ const ExperimentDetail = () => {
           <h1 className="text-3xl font-bold mb-3 font-display">{experiment.name}</h1>
           <p className="text-primary-100 max-w-2xl">{experiment.description}</p>
           {experiment.videoUrl && (
-            <a
-              href={experiment.videoUrl}
-              target="_blank"
-              rel="noopener noreferrer"
+            <button
+              onClick={() => setShowVideo(true)}
               className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-xl text-white font-medium transition hover:scale-105 active:scale-95"
             >
               <Video size={20} />
               观看实验演示视频
-              <ExternalLink size={16} />
-            </a>
+              <Maximize2 size={16} />
+            </button>
           )}
         </div>
       </div>
@@ -186,6 +195,40 @@ const ExperimentDetail = () => {
           })}
         </div>
       </div>
+
+      {/* 视频弹窗 */}
+      {showVideo && experiment.videoUrl && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
+          onClick={() => setShowVideo(false)}
+        >
+          <div 
+            className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between px-4 py-3 bg-gray-900">
+              <span className="text-white font-medium">实验演示视频 · {experiment.name}</span>
+              <button
+                onClick={() => setShowVideo(false)}
+                className="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition"
+              >
+                <X size={20} />
+              </button>
+            </div>
+            <div className="aspect-video w-full">
+              <iframe
+                src={getBilibiliEmbedUrl(experiment.videoUrl)}
+                className="w-full h-full"
+                frameBorder="0"
+                allowFullScreen
+                allow="autoplay; fullscreen"
+                scrolling="no"
+                title="实验演示视频"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
