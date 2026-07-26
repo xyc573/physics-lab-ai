@@ -13,12 +13,14 @@ import {
   Atom,
   Video,
   X,
-  Maximize2
+  Maximize2,
+  Play
 } from 'lucide-react';
 import { getExperimentById } from '../data/experiments';
+import { getVideosForExperiment } from '../data/experimentVideos';
 import { categoryLabels, difficultyLabels, difficultyColors } from '../types/experiment';
 import { useLearningStore } from '../store/learningStore';
-import type { ExperimentCategory } from '../types/experiment';
+import type { ExperimentCategory, VideoItem } from '../types/experiment';
 
 const categoryIcons: Record<ExperimentCategory, React.ElementType> = {
   book1: BookOpen,
@@ -34,7 +36,7 @@ const ExperimentDetail = () => {
   const navigate = useNavigate();
   const experiment = getExperimentById(id);
   const getRecord = useLearningStore(state => state.getRecord);
-  const [showVideo, setShowVideo] = useState(false);
+  const [currentVideo, setCurrentVideo] = useState<VideoItem | null>(null);
   
   const getBilibiliEmbedUrl = (url: string) => {
     const bvMatch = url.match(/\/video\/(BV[a-zA-Z0-9]+)/);
@@ -43,6 +45,27 @@ const ExperimentDetail = () => {
     }
     return url;
   };
+
+  const getAllVideos = (): VideoItem[] => {
+    if (!experiment) return [];
+    
+    const mappedVideos = getVideosForExperiment(experiment.id);
+    if (mappedVideos.length > 0) {
+      return mappedVideos;
+    }
+    
+    if (experiment.videos && experiment.videos.length > 0) {
+      return experiment.videos;
+    }
+    
+    if (experiment.videoUrl) {
+      return [{ title: experiment.name, url: experiment.videoUrl }];
+    }
+    
+    return [];
+  };
+
+  const videos = getAllVideos();
   
   if (!experiment) {
     return (
@@ -118,15 +141,25 @@ const ExperimentDetail = () => {
           </div>
           <h1 className="text-3xl font-bold mb-3 font-display">{experiment.name}</h1>
           <p className="text-primary-100 max-w-2xl">{experiment.description}</p>
-          {experiment.videoUrl && (
-            <button
-              onClick={() => setShowVideo(true)}
-              className="inline-flex items-center gap-2 mt-5 px-5 py-2.5 bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-xl text-white font-medium transition hover:scale-105 active:scale-95"
-            >
-              <Video size={20} />
-              观看实验演示视频
-              <Maximize2 size={16} />
-            </button>
+          {videos.length > 0 && (
+            <div className="mt-5">
+              <p className="text-white/80 text-sm mb-3 flex items-center gap-2">
+                <Video size={16} />
+                相关演示视频（{videos.length}个）
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {videos.map((video, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setCurrentVideo(video)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm rounded-xl text-white text-sm font-medium transition hover:scale-105 active:scale-95"
+                  >
+                    <Play size={16} />
+                    {video.title.length > 12 ? video.title.slice(0, 12) + '...' : video.title}
+                  </button>
+                ))}
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -197,19 +230,19 @@ const ExperimentDetail = () => {
       </div>
 
       {/* 视频弹窗 */}
-      {showVideo && experiment.videoUrl && (
+      {currentVideo && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setShowVideo(false)}
+          onClick={() => setCurrentVideo(null)}
         >
           <div 
             className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between px-4 py-3 bg-gray-900">
-              <span className="text-white font-medium">实验演示视频 · {experiment.name}</span>
+              <span className="text-white font-medium">{currentVideo.title}</span>
               <button
-                onClick={() => setShowVideo(false)}
+                onClick={() => setCurrentVideo(null)}
                 className="p-2 rounded-full hover:bg-white/10 text-white/70 hover:text-white transition"
               >
                 <X size={20} />
@@ -217,13 +250,13 @@ const ExperimentDetail = () => {
             </div>
             <div className="aspect-video w-full">
               <iframe
-                src={getBilibiliEmbedUrl(experiment.videoUrl)}
+                src={getBilibiliEmbedUrl(currentVideo.url)}
                 className="w-full h-full"
                 frameBorder="0"
                 allowFullScreen
                 allow="autoplay; fullscreen"
                 scrolling="no"
-                title="实验演示视频"
+                title={currentVideo.title}
               />
             </div>
           </div>

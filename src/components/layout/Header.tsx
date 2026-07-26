@@ -1,11 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Atom, BarChart3, Home, Info } from 'lucide-react';
+import { Atom, BarChart3, Home, Info, Video } from 'lucide-react';
 
 const Header = () => {
   const location = useLocation();
   
   const navItems = [
     { path: '/', label: '实验中心', icon: Home },
+    { path: '/videos', label: '视频库', icon: Video },
     { path: '/analysis', label: '学习分析', icon: BarChart3 },
     { path: '/about', label: '关于', icon: Info },
   ];

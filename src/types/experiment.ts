@@ -21,6 +21,17 @@ export interface SimulationConfig {
   paramRanges: Record<string, { min: number; max: number; step: number; label: string; unit?: string }>;
 }
 
+export interface VideoItem {
+  title: string;
+  url: string;
+}
+
+export interface DemoVideo {
+  title: string;
+  url: string;
+  category: ExperimentCategory;
+}
+
 export interface Experiment {
   id: string;
   name: string;
@@ -29,6 +40,7 @@ export interface Experiment {
   description: string;
   icon: string;
   videoUrl?: string;
+  videos?: VideoItem[];
   preview: {
     middleSchoolConnection: string[];
     principles: Principle[];
