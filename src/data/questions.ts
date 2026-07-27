@@ -26,7 +26,20 @@ export const useQuestionStore = create<QuestionState>((set, get) => ({
       const res = await fetch('./questions.json?t=' + Date.now());
       if (!res.ok) throw new Error('Failed to load questions');
       const data = await res.json();
-      set({ questions: data, loading: false, loaded: true });
+      
+      let allQuestions = [...data];
+      
+      try {
+        const customRes = await fetch('./custom-questions.json?t=' + Date.now());
+        if (customRes.ok) {
+          const customData = await customRes.json();
+          if (customData.questions && Array.isArray(customData.questions)) {
+            allQuestions = [...customData.questions, ...allQuestions];
+          }
+        }
+      } catch {}
+      
+      set({ questions: allQuestions, loading: false, loaded: true });
     } catch (e) {
       set({ error: (e as Error).message, loading: false, loaded: true });
     }
