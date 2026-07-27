@@ -47,168 +47,222 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
       ctx.fillRect(0, 0, width, height);
 
       const state = stateRef.current;
+      const isCharging = state.phase === 'charging';
 
-      const circuitX = 100;
-      const circuitY = 80;
-      const circuitW = 280;
-      const circuitH = 200;
+      const circuitLeft = 80;
+      const circuitRight = 380;
+      const circuitTop = 50;
+      const circuitBottom = 250;
+      const circuitCX = (circuitLeft + circuitRight) / 2;
+      const circuitCY = (circuitTop + circuitBottom) / 2;
+
+      const batteryX = circuitLeft;
+      const batteryY = circuitCY;
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(batteryX - 15, batteryY - 35);
+      ctx.lineTo(batteryX - 15, batteryY - 8);
+      ctx.moveTo(batteryX + 15, batteryY - 35);
+      ctx.lineTo(batteryX + 15, batteryY - 8);
+      ctx.moveTo(batteryX - 15, batteryY + 8);
+      ctx.lineTo(batteryX - 15, batteryY + 35);
+      ctx.moveTo(batteryX + 15, batteryY + 8);
+      ctx.lineTo(batteryX + 15, batteryY + 35);
+      ctx.moveTo(batteryX - 25, batteryY);
+      ctx.lineTo(batteryX - 15, batteryY);
+      ctx.moveTo(batteryX + 15, batteryY);
+      ctx.lineTo(batteryX + 25, batteryY);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#dc2626';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('+', batteryX - 5, batteryY - 45);
+      ctx.fillStyle = '#2563eb';
+      ctx.fillText('−', batteryX + 5, batteryY - 45);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(`E=${sourceVoltage}V`, batteryX, batteryY - 58);
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px sans-serif';
+      ctx.fillText('直流电源', batteryX, batteryY + 55);
+
+      const switchX = circuitCX - 20;
+      const switchY = circuitTop - 5;
+      const switchTopY = circuitTop - 25;
+      const switchBottomY = circuitBottom + 5;
+
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(switchX, switchY, 5, 0, Math.PI * 2);
+      ctx.arc(switchX - 25, switchTopY, 4, 0, Math.PI * 2);
+      ctx.arc(switchX + 25, switchTopY, 4, 0, Math.PI * 2);
+      ctx.arc(switchX - 25, switchBottomY, 4, 0, Math.PI * 2);
+      ctx.arc(switchX + 25, switchBottomY, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.strokeStyle = state.switchClosed ? '#22c55e' : '#ef4444';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if (isCharging) {
+        ctx.moveTo(switchX, switchY);
+        ctx.lineTo(switchX - 22, switchTopY + 3);
+      } else {
+        ctx.moveTo(switchX, switchY);
+        ctx.lineTo(switchX - 22, switchBottomY - 3);
+      }
+      ctx.stroke();
+
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('充电', switchX - 25, switchTopY - 10);
+      ctx.fillText('放电', switchX - 25, switchBottomY + 18);
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText('S', switchX + 8, switchY + 4);
+
+      const resistorX = circuitRight;
+      const resistorY = circuitCY;
+      const zigzagH = 50;
+      const zigzagCount = 6;
+      const zigzagW = 16;
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(resistorX, resistorY - zigzagH / 2);
+      ctx.lineTo(resistorX - zigzagW / 2, resistorY - zigzagH / 2 + zigzagH / (zigzagCount * 2));
+      for (let i = 0; i < zigzagCount; i++) {
+        const y1 = resistorY - zigzagH / 2 + (i + 0.5) * zigzagH / zigzagCount;
+        const y2 = resistorY - zigzagH / 2 + (i + 1) * zigzagH / zigzagCount;
+        ctx.lineTo(resistorX + zigzagW / 2, y1);
+        ctx.lineTo(resistorX - zigzagW / 2, y2);
+      }
+      ctx.lineTo(resistorX, resistorY + zigzagH / 2);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`R=${params.resistance || 10}kΩ`, resistorX + 20, resistorY + 5);
+
+      const capX = circuitCX + 30;
+      const capY = circuitBottom + 55;
+      const plateW = 55;
+      const plateGap = 16;
+      
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(capX - plateW / 2, capY - plateGap / 2);
+      ctx.lineTo(capX + plateW / 2, capY - plateGap / 2);
+      ctx.moveTo(capX - plateW / 2, capY + plateGap / 2);
+      ctx.lineTo(capX + plateW / 2, capY + plateGap / 2);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#1e293b';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`C=${params.capacitance || 100}μF`, capX + 55, capY + 5);
 
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(circuitX, circuitY + circuitH / 2);
-      ctx.lineTo(circuitX + 40, circuitY + circuitH / 2);
-      ctx.moveTo(circuitX + 40, circuitY);
-      ctx.lineTo(circuitX + 40, circuitY + circuitH / 2 - 15);
-      ctx.lineTo(circuitX + 70, circuitY + circuitH / 2 - 15);
-      ctx.lineTo(circuitX + 70, circuitY + circuitH / 2 + 15);
-      ctx.lineTo(circuitX + 40, circuitY + circuitH / 2 + 15);
-      ctx.lineTo(circuitX + 40, circuitY + circuitH);
+      ctx.moveTo(batteryX, circuitTop - 10);
+      ctx.lineTo(batteryX, circuitTop);
+      ctx.lineTo(switchX + 25, circuitTop);
+      ctx.lineTo(switchX + 25, switchTopY);
+      ctx.moveTo(switchX - 25, switchBottomY);
+      ctx.lineTo(switchX - 25, capY + plateGap / 2);
+      ctx.lineTo(capX - plateW / 2, capY + plateGap / 2);
+      ctx.moveTo(capX - plateW / 2, capY - plateGap / 2);
+      ctx.lineTo(resistorX, capY - plateGap / 2);
+      ctx.lineTo(resistorX, resistorY + zigzagH / 2);
+      ctx.moveTo(resistorX, resistorY - zigzagH / 2);
+      ctx.lineTo(resistorX, switchBottomY);
+      ctx.lineTo(switchX + 25, switchBottomY);
+      ctx.moveTo(switchX - 25, switchTopY);
+      ctx.lineTo(switchX - 25, circuitTop);
+      ctx.lineTo(batteryX - 30, circuitTop);
+      ctx.lineTo(batteryX - 30, batteryY + 35);
       ctx.stroke();
-      
-      ctx.fillStyle = '#dc2626';
-      ctx.font = 'bold 16px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('+', circuitX + 55, circuitY + 25);
-      ctx.fillStyle = '#2563eb';
-      ctx.fillText('−', circuitX + 55, circuitY + circuitH - 10);
-      ctx.fillStyle = '#1e293b';
-      ctx.font = '11px sans-serif';
-      ctx.fillText(`${sourceVoltage}V`, circuitX + 55, circuitY + circuitH / 2);
 
-      const switchX = circuitX + circuitW / 2;
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(switchX - 20, circuitY);
-      ctx.lineTo(switchX + 20, circuitY);
-      ctx.stroke();
-      
-      if (state.switchClosed) {
-        ctx.beginPath();
-        ctx.moveTo(switchX - 15, circuitY);
-        ctx.lineTo(switchX + 15, circuitY - 3);
-        ctx.strokeStyle = '#22c55e';
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(switchX - 15, circuitY);
-        ctx.lineTo(switchX + 15, circuitY - 25);
-        ctx.strokeStyle = '#ef4444';
-        ctx.stroke();
-      }
-      
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.arc(switchX - 15, circuitY, 4, 0, Math.PI * 2);
-      ctx.arc(switchX + 15, circuitY, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText('开关', switchX, circuitY - 30);
-
-      const resistorX = circuitX + 180;
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(resistorX, circuitY);
-      ctx.lineTo(resistorX, circuitY + 35);
-      
-      const zigzagY = circuitY + 35;
-      const zigzagH = 40;
-      const zigzagCount = 6;
-      const zigzagW = 12;
-      ctx.beginPath();
-      ctx.moveTo(resistorX - zigzagW / 2, zigzagY);
-      for (let i = 0; i < zigzagCount; i++) {
-        const y1 = zigzagY + (i + 0.5) * zigzagH / zigzagCount;
-        const y2 = zigzagY + (i + 1) * zigzagH / zigzagCount;
-        ctx.lineTo(resistorX + zigzagW / 2, y1);
-        ctx.lineTo(resistorX - zigzagW / 2, y2);
-      }
-      ctx.lineTo(resistorX, zigzagY + zigzagH);
-      ctx.stroke();
-      
-      ctx.beginPath();
-      ctx.moveTo(resistorX, circuitY + 75);
-      ctx.lineTo(resistorX, circuitY + circuitH);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#1e293b';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(`${params.resistance || 10}kΩ`, resistorX + 25, circuitY + 60);
-
-      const capX = circuitX + circuitW;
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.moveTo(circuitX + 40, circuitY);
-      ctx.lineTo(capX - 30, circuitY);
-      ctx.moveTo(capX - 30, circuitY - 25);
-      ctx.lineTo(capX - 30, circuitY + 25);
-      ctx.moveTo(capX - 10, circuitY - 25);
-      ctx.lineTo(capX - 10, circuitY + 25);
-      ctx.moveTo(capX - 10, circuitY + circuitH / 2 - 30);
-      ctx.lineTo(capX - 10, circuitY + circuitH / 2 + 30);
-      ctx.moveTo(capX - 30, circuitY + circuitH / 2 - 30);
-      ctx.lineTo(capX - 30, circuitY + circuitH / 2 + 30);
-      ctx.moveTo(capX - 30, circuitY + circuitH);
-      ctx.lineTo(circuitX + 40, circuitY + circuitH);
-      ctx.stroke();
-      
-      ctx.fillStyle = '#1e293b';
-      ctx.font = '10px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(`${params.capacitance || 100}μF`, capX - 5, circuitY - 35);
-
-      const topPlateX = capX - 30;
-      const bottomPlateX = capX - 10;
-      const plateTop = circuitY + circuitH / 2 - 28;
-      const plateBottom = circuitY + circuitH / 2 + 28;
-      
       const chargeRatio = state.voltage / sourceVoltage;
-      const maxCharges = 8;
+      const maxCharges = 10;
       const chargeCount = Math.floor(chargeRatio * maxCharges);
       
       for (let i = 0; i < chargeCount; i++) {
-        const y = plateTop + 8 + i * (plateBottom - plateTop - 16) / maxCharges;
+        const x = capX - plateW / 2 + 8 + i * (plateW - 16) / maxCharges;
         ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('+', topPlateX - 2, y + 3);
+        ctx.fillText('+', x, capY - plateGap / 2 - 6);
       }
       
       for (let i = 0; i < chargeCount; i++) {
-        const y = plateTop + 8 + i * (plateBottom - plateTop - 16) / maxCharges;
+        const x = capX - plateW / 2 + 8 + i * (plateW - 16) / maxCharges;
         ctx.fillStyle = '#2563eb';
-        ctx.font = 'bold 10px sans-serif';
+        ctx.font = 'bold 11px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('−', bottomPlateX + 2, y + 3);
+        ctx.fillText('−', x, capY + plateGap / 2 + 12);
       }
 
       if (state.switchClosed && Math.abs(state.current) > 0.001) {
-        const currentDir = state.current > 0 ? 1 : -1;
-        const electronSpeed = state.time * 50 * currentDir;
-        for (let i = 0; i < 5; i++) {
-          const offset = ((electronSpeed + i * 50) % 200 + 200) % 200;
+        const speed = state.time * 70;
+        const pathLen = 700;
+        const dir = isCharging ? 1 : 1;
+        
+        for (let i = 0; i < 7; i++) {
+          const offset = ((speed * dir + i * (pathLen / 7)) % pathLen + pathLen) % pathLen;
           let ex, ey;
-          if (offset < 40) {
-            ex = circuitX + 40 + offset;
-            ey = circuitY;
-          } else if (offset < 80) {
-            ex = switchX - 20 + (offset - 40);
-            ey = circuitY;
-          } else if (offset < 120) {
+          
+          if (offset < 50) {
+            const t = offset / 50;
+            ex = batteryX;
+            ey = circuitTop - 10 + t * 10;
+          } else if (offset < 140) {
+            const t = (offset - 50) / 90;
+            ex = batteryX + t * (switchX + 25 - batteryX);
+            ey = circuitTop;
+          } else if (offset < 170) {
+            const t = (offset - 140) / 30;
+            ex = switchX + 25;
+            ey = circuitTop - t * (circuitTop - switchTopY);
+          } else if (offset < 210) {
+            const t = (offset - 170) / 40;
+            ex = switchX + 25 - t * 50;
+            ey = switchTopY;
+          } else if (offset < 270) {
+            const t = (offset - 210) / 60;
+            ex = switchX - 25;
+            ey = switchTopY + t * (capY - plateGap / 2 - switchTopY);
+          } else if (offset < 350) {
+            const t = (offset - 270) / 80;
+            ex = switchX - 25 + t * (capX - plateW / 2 - (switchX - 25));
+            ey = capY + plateGap / 2;
+          } else if (offset < 450) {
+            const t = (offset - 350) / 100;
+            ex = capX - plateW / 2 + t * (resistorX - (capX - plateW / 2));
+            ey = capY - plateGap / 2;
+          } else if (offset < 510) {
+            const t = (offset - 450) / 60;
             ex = resistorX;
-            ey = circuitY + (offset - 80) * 2;
-          } else if (offset < 160) {
-            ex = resistorX + (offset - 120) * 0.5;
-            ey = circuitY + circuitH;
+            ey = capY - plateGap / 2 - t * (capY - plateGap / 2 - (resistorY + zigzagH / 2));
+          } else if (offset < 570) {
+            const t = (offset - 510) / 60;
+            ex = resistorX;
+            ey = resistorY - zigzagH / 2 + t * (switchBottomY - (resistorY - zigzagH / 2));
           } else {
-            ex = capX - 30 - (offset - 160) * 1.25;
-            ey = circuitY + circuitH;
+            const t = (offset - 570) / 130;
+            ex = switchX + 25 - t * (switchX + 25 - (batteryX - 30));
+            ey = switchBottomY;
           }
+          
           ctx.fillStyle = '#60a5fa';
           ctx.beginPath();
           ctx.arc(ex, ey, 3, 0, Math.PI * 2);
@@ -216,103 +270,222 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
         }
       }
 
-      const graphX = 420;
-      const graphY = 40;
-      const graphW = 260;
-      const graphH = 200;
-      
-      ctx.fillStyle = 'rgba(30, 41, 59, 0.75)';
+      const graph1X = 20;
+      const graph1Y = 320;
+      const graph1W = 320;
+      const graph1H = 150;
+      const padding1 = { top: 25, right: 15, bottom: 28, left: 45 };
+      const plot1W = graph1W - padding1.left - padding1.right;
+      const plot1H = graph1H - padding1.top - padding1.bottom;
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
       ctx.beginPath();
-      ctx.roundRect(graphX, graphY, graphW, graphH, 8);
+      ctx.roundRect(graph1X, graph1Y, graph1W, graph1H, 8);
       ctx.fill();
-      
-      ctx.strokeStyle = '#475569';
+      ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 1;
-      ctx.strokeRect(graphX + 35, graphY + 25, graphW - 45, graphH - 50);
-      
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('电压/电流变化曲线', graphX + 10, graphY + 18);
-      
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '9px sans-serif';
+      ctx.stroke();
+
+      ctx.fillStyle = '#166534';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('电压-时间曲线 (U-t)', graph1X + graph1W / 2, graph1Y + 15);
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = graph1Y + padding1.top + (i / 4) * plot1H;
+        ctx.beginPath();
+        ctx.moveTo(graph1X + padding1.left, y);
+        ctx.lineTo(graph1X + graph1W - padding1.right, y);
+        ctx.stroke();
+      }
+      for (let i = 0; i <= 5; i++) {
+        const x = graph1X + padding1.left + (i / 5) * plot1W;
+        ctx.beginPath();
+        ctx.moveTo(x, graph1Y + padding1.top);
+        ctx.lineTo(x, graph1Y + graph1H - padding1.bottom);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(graph1X + padding1.left, graph1Y + padding1.top, plot1W, plot1H);
+
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText('V/I', graphX + 30, graphY + 30);
-      ctx.textAlign = 'left';
-      ctx.fillText('t', graphX + graphW - 10, graphY + graphH - 28);
-      
-      const maxT = Math.max(tau * 5, state.time + 0.5);
-      const plotAreaW = graphW - 45;
-      const plotAreaH = graphH - 50;
-      
+      ctx.fillText('Uc', graph1X + padding1.left - 5, graph1Y + padding1.top - 3);
+      ctx.textAlign = 'center';
+      ctx.fillText('0', graph1X + padding1.left - 12, graph1Y + graph1H - padding1.bottom + 4);
+      ctx.fillText(sourceVoltage.toFixed(0) + 'V', graph1X + padding1.left - 12, graph1Y + padding1.top + 4);
+      ctx.fillText('t', graph1X + graph1W - padding1.right, graph1Y + graph1H - 8);
+
+      const maxT = Math.max(tau * 5, state.time + 0.1);
+      const getX1 = (t: number) => graph1X + padding1.left + (t / maxT) * plot1W;
+      const getY1 = (v: number) => graph1Y + padding1.top + plot1H - (v / sourceVoltage) * plot1H;
+
       if (state.voltageData.length > 1) {
         ctx.strokeStyle = '#22c55e';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
         state.voltageData.forEach((pt, i) => {
-          const px = graphX + 35 + (pt.t / maxT) * plotAreaW;
-          const py = graphY + 25 + plotAreaH - (pt.v / sourceVoltage) * plotAreaH;
+          const px = getX1(pt.t);
+          const py = getY1(pt.v);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
         ctx.stroke();
       }
-      
+
+      ctx.fillStyle = '#22c55e';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('● Uc(t)', graph1X + padding1.left + 10, graph1Y + padding1.top + 15);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(isCharging ? '充电: Uc = E(1-e^(-t/τ))' : '放电: Uc = E·e^(-t/τ)', graph1X + padding1.left + 10, graph1Y + padding1.top + 30);
+
+      const graph2X = 360;
+      const graph2Y = 320;
+      const graph2W = 320;
+      const graph2H = 150;
+      const padding2 = { top: 25, right: 15, bottom: 28, left: 45 };
+      const plot2W = graph2W - padding2.left - padding2.right;
+      const plot2H = graph2H - padding2.top - padding2.bottom;
+
+      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.beginPath();
+      ctx.roundRect(graph2X, graph2Y, graph2W, graph2H, 8);
+      ctx.fill();
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      ctx.fillStyle = '#9a3412';
+      ctx.font = 'bold 12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('电流-时间曲线 (I-t)', graph2X + graph2W / 2, graph2Y + 15);
+
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 1;
+      const zeroY2 = graph2Y + padding2.top + plot2H / 2;
+      for (let i = 0; i <= 4; i++) {
+        const y = graph2Y + padding2.top + (i / 4) * plot2H;
+        ctx.beginPath();
+        ctx.moveTo(graph2X + padding2.left, y);
+        ctx.lineTo(graph2X + graph2W - padding2.right, y);
+        ctx.stroke();
+      }
+      for (let i = 0; i <= 5; i++) {
+        const x = graph2X + padding2.left + (i / 5) * plot2W;
+        ctx.beginPath();
+        ctx.moveTo(x, graph2Y + padding2.top);
+        ctx.lineTo(x, graph2Y + graph2H - padding2.bottom);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(graph2X + padding2.left, graph2Y + padding2.top, plot2W, plot2H);
+
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(graph2X + padding2.left, zeroY2);
+      ctx.lineTo(graph2X + graph2W - padding2.right, zeroY2);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      const maxI = sourceVoltage / resistance;
+      ctx.fillStyle = '#475569';
+      ctx.font = '9px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('I', graph2X + padding2.left - 5, graph2Y + padding2.top - 3);
+      ctx.fillText('+' + (maxI * 1000).toFixed(0) + 'mA', graph2X + padding2.left - 5, graph2Y + padding2.top + 8);
+      ctx.fillText('0', graph2X + padding2.left - 5, zeroY2 + 3);
+      ctx.fillText('-' + (maxI * 1000).toFixed(0) + 'mA', graph2X + padding2.left - 5, graph2Y + graph2H - padding2.bottom - 2);
+      ctx.textAlign = 'center';
+      ctx.fillText('t', graph2X + graph2W - padding2.right, graph2Y + graph2H - 8);
+
+      const getX2 = (t: number) => graph2X + padding2.left + (t / maxT) * plot2W;
+      const getY2 = (i: number) => zeroY2 - (i / maxI) * (plot2H / 2);
+
       if (state.currentData.length > 1) {
-        const maxI = sourceVoltage / resistance;
         ctx.strokeStyle = '#f97316';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 2.5;
         ctx.beginPath();
         state.currentData.forEach((pt, i) => {
-          const px = graphX + 35 + (pt.t / maxT) * plotAreaW;
-          const py = graphY + 25 + plotAreaH - (Math.abs(pt.i) / maxI) * plotAreaH;
+          const px = getX2(pt.t);
+          const py = getY2(pt.i);
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         });
         ctx.stroke();
       }
-      
-      ctx.fillStyle = '#22c55e';
-      ctx.fillRect(graphX + 40, graphY + graphH - 20, 12, 3);
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = '9px sans-serif';
-      ctx.fillText('电压', graphX + 55, graphY + graphH - 16);
+
       ctx.fillStyle = '#f97316';
-      ctx.fillRect(graphX + 90, graphY + graphH - 20, 12, 3);
-      ctx.fillStyle = '#e2e8f0';
-      ctx.fillText('电流', graphX + 105, graphY + graphH - 16);
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('● I(t)', graph2X + padding2.left + 10, graph2Y + padding2.top + 15);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(isCharging ? '充电: I = I0·e^(-t/τ)' : '放电: I = -I0·e^(-t/τ)', graph2X + padding2.left + 10, graph2Y + padding2.top + 30);
+
+      ctx.fillStyle = 'rgba(124, 58, 237, 0.1)';
+      ctx.beginPath();
+      ctx.roundRect(420, 20, 260, 45, 6);
+      ctx.fill();
+      ctx.strokeStyle = '#7c3aed';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      ctx.fillStyle = '#5b21b6';
+      ctx.font = 'bold 12px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText(`时间常数 τ = RC = ${(tau * 1000).toFixed(2)} ms`, 550, 48);
 
       ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
       ctx.beginPath();
-      ctx.roundRect(20, 320, 660, 140, 8);
+      ctx.roundRect(420, 75, 260, 230, 8);
       ctx.fill();
       
       ctx.fillStyle = '#fbbf24';
       ctx.font = 'bold 12px monospace';
       ctx.textAlign = 'left';
-      ctx.fillText('RC 充放电公式', 40, 345);
+      ctx.fillText('RC 充放电参数', 440, 100);
       ctx.strokeStyle = '#475569';
       ctx.beginPath();
-      ctx.moveTo(40, 352);
-      ctx.lineTo(180, 352);
+      ctx.moveTo(440, 108);
+      ctx.lineTo(660, 108);
       ctx.stroke();
       
       ctx.fillStyle = '#e2e8f0';
       ctx.font = '11px monospace';
-      ctx.fillText(`时间常数 τ = R × C = ${params.resistance || 10}kΩ × ${params.capacitance || 100}μF = ${(tau * 1000).toFixed(2)} ms`, 40, 378);
-      ctx.fillStyle = '#4ade80';
-      ctx.fillText(`充电: Uc = U(1 - e^(-t/τ))`, 40, 400);
-      ctx.fillStyle = '#fb923c';
-      ctx.fillText(`     I = (U/R)e^(-t/τ)`, 40, 422);
-      
+      ctx.fillText(`电源 E = ${sourceVoltage.toFixed(1)} V`, 440, 132);
       ctx.fillStyle = '#60a5fa';
-      ctx.textAlign = 'right';
-      ctx.fillText(`Uc = ${state.voltage.toFixed(2)} V`, 660, 378);
-      ctx.fillStyle = '#fb923c';
-      ctx.fillText(`I = ${(state.current * 1000).toFixed(3)} mA`, 660, 400);
+      ctx.fillText(`电阻 R = ${params.resistance || 10} kΩ`, 440, 152);
+      ctx.fillStyle = '#f472b6';
+      ctx.fillText(`电容 C = ${params.capacitance || 100} μF`, 440, 172);
       ctx.fillStyle = '#a78bfa';
-      ctx.fillText(`Q = ${(state.charge * 1000).toFixed(3)} mC`, 660, 422);
+      ctx.fillText(`τ = RC = ${(tau * 1000).toFixed(2)} ms`, 440, 192);
+      
+      ctx.strokeStyle = '#475569';
+      ctx.beginPath();
+      ctx.moveTo(440, 208);
+      ctx.lineTo(660, 208);
+      ctx.stroke();
+      
+      ctx.fillStyle = '#22c55e';
+      ctx.fillText(`Uc = ${state.voltage.toFixed(2)} V`, 440, 232);
+      ctx.fillStyle = '#f97316';
+      ctx.fillText(`I = ${(state.current * 1000).toFixed(3)} mA`, 440, 252);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(`Q = ${(state.charge * 1000).toFixed(3)} mC`, 440, 272);
+      
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '10px monospace';
+      ctx.fillText(`状态: ${isCharging ? '充电中 ⚡' : '放电中 🔋'}`, 440, 295);
     };
 
     let lastTime = performance.now();

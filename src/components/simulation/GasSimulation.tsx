@@ -235,15 +235,15 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
       ctx.fillText('理想气体状态方程', width - 135, height - 28);
 
       // P-V 图
-      const graphX = width - 250;
-      const graphY = 150;
-      const graphW = 220;
-      const graphH = 140;
-      const padding = { top: 20, right: 15, bottom: 25, left: 40 };
+      const graphX = width - 260;
+      const graphY = 145;
+      const graphW = 230;
+      const graphH = 150;
+      const padding = { top: 25, right: 20, bottom: 30, left: 45 };
       const plotW = graphW - padding.left - padding.right;
       const plotH = graphH - padding.top - padding.bottom;
 
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
       ctx.beginPath();
       ctx.roundRect(graphX, graphY, graphW, graphH, 8);
       ctx.fill();
@@ -254,7 +254,7 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('P-V 图（等温线）', graphX + graphW / 2, graphY + 12);
+      ctx.fillText('P-V 图（等温线）', graphX + graphW / 2, graphY + 14);
 
       const allData = dataPointsRef.current.length > 1 ? dataPointsRef.current : [
         { v: 20, p: (moles * R * temperature) / (20 * 1e-6) / 1000 },
@@ -264,8 +264,8 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
 
       const vMin = 20;
       const vMax = 200;
-      const pMin = Math.min(...allData.map(d => d.p)) * 0.9;
-      const pMax = Math.max(...allData.map(d => d.p)) * 1.1;
+      const pMin = Math.min(...allData.map(d => d.p)) * 0.85;
+      const pMax = Math.max(...allData.map(d => d.p)) * 1.15;
 
       const getX = (v: number) => graphX + padding.left + ((v - vMin) / (vMax - vMin)) * plotW;
       const getY = (p: number) => graphY + padding.top + (1 - (p - pMin) / (pMax - pMin)) * plotH;
@@ -279,43 +279,82 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
         ctx.lineTo(graphX + graphW - padding.right, y);
         ctx.stroke();
       }
+      for (let i = 0; i <= 4; i++) {
+        const x = graphX + padding.left + (i / 4) * plotW;
+        ctx.beginPath();
+        ctx.moveTo(x, graphY + padding.top);
+        ctx.lineTo(x, graphY + graphH - padding.bottom);
+        ctx.stroke();
+      }
 
       ctx.strokeStyle = '#3b82f6';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      const steps = 50;
+      const steps = 60;
+      let firstPoint = true;
       for (let i = 0; i <= steps; i++) {
         const v = vMin + (i / steps) * (vMax - vMin);
         const p = (moles * R * temperature) / (v * 1e-6) / 1000;
-        const x = getX(v);
-        const y = getY(p);
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+        if (p >= pMin && p <= pMax) {
+          const x = getX(v);
+          const y = getY(p);
+          if (firstPoint) {
+            ctx.moveTo(x, y);
+            firstPoint = false;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
       }
       ctx.stroke();
 
-      ctx.fillStyle = '#ef4444';
+      if (pressureKPa >= pMin && pressureKPa <= pMax) {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(getX(volume), getY(pressureKPa), 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(getX(volume), getY(pressureKPa), 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(graphX + padding.left, graphY + padding.top);
+      ctx.lineTo(graphX + padding.left, graphY + graphH - padding.bottom);
+      ctx.lineTo(graphX + graphW - padding.right, graphY + graphH - padding.bottom);
+      ctx.stroke();
 
       ctx.fillStyle = '#64748b';
       ctx.font = '9px sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText('P', graphX + padding.left - 5, graphY + padding.top - 3);
+      for (let i = 0; i <= 4; i++) {
+        const pVal = pMax - (i / 4) * (pMax - pMin);
+        const y = graphY + padding.top + (i / 4) * plotH;
+        ctx.fillText(`${pVal.toFixed(0)}`, graphX + padding.left - 4, y + 3);
+      }
       ctx.textAlign = 'center';
-      ctx.fillText('V', graphX + graphW - padding.right, graphY + graphH - 5);
+      for (let i = 0; i <= 4; i++) {
+        const vVal = vMin + (i / 4) * (vMax - vMin);
+        const x = graphX + padding.left + (i / 4) * plotW;
+        ctx.fillText(`${vVal.toFixed(0)}`, x, graphY + graphH - padding.bottom + 12);
+      }
+
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('P(kPa)', graphX + padding.left - 5, graphY + padding.top - 5);
+      ctx.textAlign = 'center';
+      ctx.fillText('V(mL)', graphX + graphW - padding.right, graphY + graphH - 8);
 
       // P-1/V 图
-      const graph2X = width - 250;
-      const graph2Y = 305;
-      const graph2W = 220;
-      const graph2H = 130;
-      const padding2 = { top: 20, right: 15, bottom: 25, left: 40 };
+      const graph2X = width - 260;
+      const graph2Y = 310;
+      const graph2W = 230;
+      const graph2H = 145;
+      const padding2 = { top: 25, right: 20, bottom: 30, left: 45 };
       const plot2W = graph2W - padding2.left - padding2.right;
       const plot2H = graph2H - padding2.top - padding2.bottom;
 
-      ctx.fillStyle = 'rgba(255,255,255,0.9)';
+      ctx.fillStyle = 'rgba(255,255,255,0.95)';
       ctx.beginPath();
       ctx.roundRect(graph2X, graph2Y, graph2W, graph2H, 8);
       ctx.fill();
@@ -326,7 +365,7 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('P-1/V 图（正比例）', graph2X + graph2W / 2, graph2Y + 12);
+      ctx.fillText('P-1/V 图（正比例）', graph2X + graph2W / 2, graph2Y + 14);
 
       const invVMin = 1 / vMax;
       const invVMax = 1 / vMin;
@@ -343,27 +382,61 @@ const GasSimulation: React.FC<Props> = ({ params, isRunning }) => {
         ctx.lineTo(graph2X + graph2W - padding2.right, y);
         ctx.stroke();
       }
+      for (let i = 0; i <= 4; i++) {
+        const x = graph2X + padding2.left + (i / 4) * plot2W;
+        ctx.beginPath();
+        ctx.moveTo(x, graph2Y + padding2.top);
+        ctx.lineTo(x, graph2Y + graph2H - padding2.bottom);
+        ctx.stroke();
+      }
 
       ctx.strokeStyle = '#22c55e';
       ctx.lineWidth = 2;
       ctx.beginPath();
       const pAtMinV = (moles * R * temperature) / (vMin * 1e-6) / 1000;
       const pAtMaxV = (moles * R * temperature) / (vMax * 1e-6) / 1000;
-      ctx.moveTo(getX2(invVMax), getY2(pAtMinV));
-      ctx.lineTo(getX2(invVMin), getY2(pAtMaxV));
+      const yStart = Math.max(Math.min(getY2(pAtMinV), graph2Y + graph2H - padding2.bottom), graph2Y + padding2.top);
+      const yEnd = Math.max(Math.min(getY2(pAtMaxV), graph2Y + graph2H - padding2.bottom), graph2Y + padding2.top);
+      ctx.moveTo(getX2(invVMax), yStart);
+      ctx.lineTo(getX2(invVMin), yEnd);
       ctx.stroke();
 
-      ctx.fillStyle = '#ef4444';
+      if (pressureKPa >= pMin && pressureKPa <= pMax) {
+        ctx.fillStyle = '#ef4444';
+        ctx.beginPath();
+        ctx.arc(getX2(1 / volume), getY2(pressureKPa), 4, 0, Math.PI * 2);
+        ctx.fill();
+      }
+
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(getX2(1 / volume), getY2(pressureKPa), 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.moveTo(graph2X + padding2.left, graph2Y + padding2.top);
+      ctx.lineTo(graph2X + padding2.left, graph2Y + graph2H - padding2.bottom);
+      ctx.lineTo(graph2X + graph2W - padding2.right, graph2Y + graph2H - padding2.bottom);
+      ctx.stroke();
 
       ctx.fillStyle = '#64748b';
       ctx.font = '9px sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText('P', graph2X + padding2.left - 5, graph2Y + padding2.top - 3);
+      for (let i = 0; i <= 4; i++) {
+        const pVal = pMax - (i / 4) * (pMax - pMin);
+        const y = graph2Y + padding2.top + (i / 4) * plot2H;
+        ctx.fillText(`${pVal.toFixed(0)}`, graph2X + padding2.left - 4, y + 3);
+      }
       ctx.textAlign = 'center';
-      ctx.fillText('1/V', graph2X + graph2W - padding2.right, graph2Y + graph2H - 5);
+      for (let i = 0; i <= 4; i++) {
+        const invVVal = invVMin + (i / 4) * (invVMax - invVMin);
+        const x = graph2X + padding2.left + (i / 4) * plot2W;
+        ctx.fillText(`${invVVal.toFixed(3)}`, x, graph2Y + graph2H - padding2.bottom + 12);
+      }
+
+      ctx.fillStyle = '#475569';
+      ctx.font = 'bold 10px sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('P(kPa)', graph2X + padding2.left - 5, graph2Y + padding2.top - 5);
+      ctx.textAlign = 'center';
+      ctx.fillText('1/V(1/mL)', graph2X + graph2W - padding2.right + 5, graph2Y + graph2H - 8);
     };
 
     const animate = () => {

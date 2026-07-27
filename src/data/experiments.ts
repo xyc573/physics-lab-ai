@@ -308,7 +308,7 @@ export const experiments: Experiment[] = [
   {
     id: 'refraction',
     name: '测量玻璃的折射率',
-    category: 'selective3',
+    category: 'selective1',
     difficulty: 'medium',
     description: '用插针法测量玻璃的折射率，理解光的折射定律。',
     icon: 'sun',
@@ -666,7 +666,7 @@ export const experiments: Experiment[] = [
   {
     id: 'transformer',
     name: '探究变压器原、副线圈电压与匝数的关系',
-    category: 'book3',
+    category: 'selective2',
     difficulty: 'medium',
     description: '通过实验探究理想变压器原、副线圈两端电压与匝数的关系，理解变压器的工作原理。',
     icon: 'zap',
@@ -888,7 +888,7 @@ export const experiments: Experiment[] = [
   {
     id: 'induction-current',
     name: '探究感应电流产生的条件',
-    category: 'book3',
+    category: 'selective2',
     difficulty: 'medium',
     description: '通过实验探究电磁感应现象，理解产生感应电流的条件，加深对磁通量变化的认识。',
     icon: 'zap',
@@ -962,7 +962,7 @@ export const experiments: Experiment[] = [
   {
     id: 'double-slit',
     name: '用双缝干涉测量光的波长',
-    category: 'selective3',
+    category: 'selective1',
     difficulty: 'hard',
     description: '通过杨氏双缝干涉实验，测量单色光的波长，理解光的波动性。',
     icon: 'waves',
@@ -1329,7 +1329,7 @@ export const experiments: Experiment[] = [
   {
     id: 'length-measurement',
     name: '长度的测量及其测量工具的选用',
-    category: 'book1',
+    category: 'book3',
     difficulty: 'easy',
     description: '学习使用刻度尺、游标卡尺和螺旋测微器测量长度，理解不同测量工具的原理和精度，掌握正确的读数方法。',
     icon: 'ruler',

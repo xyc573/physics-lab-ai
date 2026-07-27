@@ -127,10 +127,12 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
         }
 
         ctx.fillStyle = '#dc2626';
-        ctx.font = 'bold 14px sans-serif';
+        ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Ω', meterX, meterY - 50);
+        ctx.fillText('Ω', meterX, meterY - 45);
       } else {
+        const isVoltMode = Math.floor(mode) === 0;
+        const scaleColor = isVoltMode ? '#1e40af' : '#92400e';
         const majorTicks = 10;
         const minorTicks = 50;
 
@@ -147,7 +149,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
           const x2 = meterX + Math.cos(angle) * innerR;
           const y2 = meterY + Math.sin(angle) * innerR;
 
-          ctx.strokeStyle = '#1e293b';
+          ctx.strokeStyle = isMajor ? scaleColor : '#475569';
           ctx.lineWidth = isMajor ? 2 : 1;
           ctx.beginPath();
           ctx.moveTo(x1, y1);
@@ -158,7 +160,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
             const labelR = innerR - tickLen - 12;
             const lx = meterX + Math.cos(angle) * labelR;
             const ly = meterY + Math.sin(angle) * labelR;
-            ctx.fillStyle = '#1e293b';
+            ctx.fillStyle = scaleColor;
             ctx.font = 'bold 11px sans-serif';
             ctx.textAlign = 'center';
             const val = (i / minorTicks) * 50;
@@ -166,10 +168,13 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
           }
         }
 
-        ctx.fillStyle = '#1e40af';
-        ctx.font = 'bold 14px sans-serif';
+        ctx.fillStyle = scaleColor;
+        ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(Math.floor(mode) === 0 ? 'V' : 'A', meterX, meterY - 50);
+        ctx.fillText(isVoltMode ? 'V' : 'A', meterX, meterY - 45);
+        ctx.fillStyle = '#64748b';
+        ctx.font = '9px sans-serif';
+        ctx.fillText(isVoltMode ? '直流电压' : '直流电流', meterX, meterY - 60);
       }
 
       const displayRatio = stateRef.current.needleSwing;
@@ -217,52 +222,72 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
       ctx.arc(meterX, meterY, 3, 0, Math.PI * 2);
       ctx.fill();
 
-      const knobY = meterY + meterRadius + 50;
+      const knobY = meterY + meterRadius + 55;
 
       ctx.fillStyle = '#1e293b';
       ctx.beginPath();
-      ctx.arc(meterX, knobY, 35, 0, Math.PI * 2);
+      ctx.arc(meterX, knobY, 38, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.arc(meterX, knobY, 32, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.fillStyle = '#475569';
       ctx.beginPath();
-      ctx.arc(meterX, knobY, 28, 0, Math.PI * 2);
+      ctx.arc(meterX, knobY, 26, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.fillStyle = '#64748b';
-      ctx.beginPath();
-      ctx.arc(meterX, knobY, 24, 0, Math.PI * 2);
-      ctx.fill();
+      const rangeLabels = ['OFF', 'V', 'A', 'Ω'];
+      const rangeAngles = [
+        -Math.PI / 2 - Math.PI / 3,
+        -Math.PI / 2 - Math.PI / 9,
+        -Math.PI / 2 + Math.PI / 9,
+        -Math.PI / 2 + Math.PI / 3
+      ];
+      const labelIndex = Math.floor(mode) + 1;
 
-      const knobAngle = -Math.PI / 2 + mode * (Math.PI / 3);
+      const knobAngle = rangeAngles[labelIndex];
       ctx.strokeStyle = '#fbbf24';
-      ctx.lineWidth = 4;
+      ctx.lineWidth = 5;
       ctx.lineCap = 'round';
       ctx.beginPath();
       ctx.moveTo(meterX, knobY);
       ctx.lineTo(
-        meterX + Math.cos(knobAngle) * 18,
-        knobY + Math.sin(knobAngle) * 18
+        meterX + Math.cos(knobAngle) * 22,
+        knobY + Math.sin(knobAngle) * 22
       );
       ctx.stroke();
 
-      const rangeLabels = ['off', 'V', 'A', 'Ω'];
-      const rangeAngles = [-Math.PI / 2 - Math.PI / 6, -Math.PI / 2, -Math.PI / 2 + Math.PI / 3, -Math.PI / 2 + Math.PI * 2 / 3];
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(meterX, knobY, 6, 0, Math.PI * 2);
+      ctx.fill();
 
       for (let i = 0; i < rangeLabels.length; i++) {
         const a = rangeAngles[i];
-        const lx = meterX + Math.cos(a) * 42;
-        const ly = knobY + Math.sin(a) * 42;
-        ctx.fillStyle = '#e2e8f0';
-        ctx.font = 'bold 11px sans-serif';
+        const lx = meterX + Math.cos(a) * 48;
+        const ly = knobY + Math.sin(a) * 48;
+        const isActive = i === labelIndex;
+        
+        if (isActive) {
+          ctx.fillStyle = 'rgba(251, 191, 36, 0.2)';
+          ctx.beginPath();
+          ctx.arc(lx, ly, 16, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        
+        ctx.fillStyle = isActive ? '#fbbf24' : '#94a3b8';
+        ctx.font = isActive ? 'bold 13px sans-serif' : 'bold 11px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(rangeLabels[i], lx, ly + 4);
       }
 
-      ctx.fillStyle = '#94a3b8';
+      ctx.fillStyle = '#64748b';
       ctx.font = '11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('档位选择', meterX, knobY + 55);
+      ctx.fillText('档位选择旋钮', meterX, knobY + 58);
 
       const terminalY = meterY + meterRadius + 95;
       const terminalSpacing = 80;

@@ -89,43 +89,64 @@ const InterferenceSimulation: React.FC<Props> = ({ params, isRunning, onReset })
       ctx.textAlign = 'center';
       ctx.fillText('光源', lightSourceX, lightSourceY + 45);
 
-      const singleSlitX = 160;
+      const singleSlitX = 140;
       const singleSlitY = height / 2;
-      const singleSlitHeight = 50;
+      const singleSlitWidth = 6;
+      const singleSlitHeight = 40;
+      const baffleHeight = 280;
+      const baffleTop = singleSlitY - baffleHeight / 2;
 
       ctx.fillStyle = '#334155';
-      ctx.fillRect(singleSlitX - 5, singleSlitY - singleSlitHeight - 60, 10, 60);
-      ctx.fillRect(singleSlitX - 5, singleSlitY + singleSlitHeight, 10, 60);
+      ctx.fillRect(singleSlitX - singleSlitWidth / 2, baffleTop, singleSlitWidth, baffleHeight);
+      ctx.clearRect(singleSlitX - singleSlitWidth / 2, singleSlitY - singleSlitHeight / 2, singleSlitWidth, singleSlitHeight);
 
       ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(singleSlitX - 5, singleSlitY - singleSlitHeight - 60, 10, 60);
-      ctx.strokeRect(singleSlitX - 5, singleSlitY + singleSlitHeight, 10, 60);
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(singleSlitX - singleSlitWidth / 2, baffleTop, singleSlitWidth, baffleHeight);
+
+      ctx.fillStyle = '#fef3c7';
+      ctx.fillRect(singleSlitX - singleSlitWidth / 2, singleSlitY - singleSlitHeight / 2, singleSlitWidth, singleSlitHeight);
 
       ctx.fillStyle = '#1e293b';
-      ctx.font = '11px sans-serif';
+      ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('单缝', singleSlitX, singleSlitY + singleSlitHeight + 75);
+      ctx.fillText('单缝', singleSlitX, baffleTop + baffleHeight + 20);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px sans-serif';
+      ctx.fillText('S₀', singleSlitX, baffleTop - 10);
 
-      const slitX = 290;
-      const slitY = height / 2;
-      const slitGap = slitDistanceMm * 80;
-      const slitWidth = 8;
-      const slitHeight = 100;
+      const doubleSlitX = 300;
+      const doubleSlitY = height / 2;
+      const slitWidth = 6;
+      const slitHeight = 35;
+      const slitGap = slitDistanceMm * 70;
+      const baffle2Height = 280;
+      const baffle2Top = doubleSlitY - baffle2Height / 2;
 
       ctx.fillStyle = '#334155';
-      ctx.fillRect(slitX - 5, slitY - slitHeight - slitGap / 2, 10, slitHeight);
-      ctx.fillRect(slitX - 5, slitY + slitGap / 2, 10, slitHeight);
+      ctx.fillRect(doubleSlitX - slitWidth / 2, baffle2Top, slitWidth, baffle2Height);
+      ctx.clearRect(doubleSlitX - slitWidth / 2, doubleSlitY - slitGap / 2 - slitHeight, slitWidth, slitHeight);
+      ctx.clearRect(doubleSlitX - slitWidth / 2, doubleSlitY + slitGap / 2, slitWidth, slitHeight);
 
       ctx.strokeStyle = '#1e293b';
-      ctx.lineWidth = 2;
-      ctx.strokeRect(slitX - 5, slitY - slitHeight - slitGap / 2, 10, slitHeight);
-      ctx.strokeRect(slitX - 5, slitY + slitGap / 2, 10, slitHeight);
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(doubleSlitX - slitWidth / 2, baffle2Top, slitWidth, baffle2Height);
+
+      const slit1CenterY = doubleSlitY - slitGap / 2 - slitHeight / 2;
+      const slit2CenterY = doubleSlitY + slitGap / 2 + slitHeight / 2;
+
+      ctx.fillStyle = 'rgba(254, 243, 199, 0.9)';
+      ctx.fillRect(doubleSlitX - slitWidth / 2, doubleSlitY - slitGap / 2 - slitHeight, slitWidth, slitHeight);
+      ctx.fillRect(doubleSlitX - slitWidth / 2, doubleSlitY + slitGap / 2, slitWidth, slitHeight);
 
       ctx.fillStyle = '#1e293b';
-      ctx.font = '11px sans-serif';
+      ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('双缝', slitX, slitY + slitGap / 2 + slitHeight + 18);
+      ctx.fillText('双缝', doubleSlitX, baffle2Top + baffle2Height + 20);
+      ctx.fillStyle = '#64748b';
+      ctx.font = '9px sans-serif';
+      ctx.fillText('S₁', doubleSlitX - 15, slit1CenterY + 3);
+      ctx.fillText('S₂', doubleSlitX - 15, slit2CenterY + 3);
 
       const screenX = 620;
       const screenTop = 60;
@@ -184,29 +205,29 @@ const InterferenceSimulation: React.FC<Props> = ({ params, isRunning, onReset })
       ctx.strokeStyle = 'rgba(59, 130, 246, 0.35)';
       ctx.lineWidth = 1.2;
       for (let i = 0; i < 10; i++) {
-        const offset = ((wavePhase + i * 25) % (slitX - singleSlitX));
+        const offset = ((wavePhase + i * 25) % (doubleSlitX - singleSlitX));
         const r = offset;
-        if (r > 0 && r < slitX - singleSlitX) {
+        if (r > 0 && r < doubleSlitX - singleSlitX) {
           ctx.beginPath();
           ctx.arc(singleSlitX, singleSlitY, r, -Math.PI / 4, Math.PI / 4);
           ctx.stroke();
         }
       }
 
-      const slit1Y = slitY - slitGap / 2 + slitHeight / 2;
-      const slit2Y = slitY + slitGap / 2 + slitHeight / 2;
+      const slit1Y = doubleSlitY - slitGap / 2 + slitHeight / 2;
+      const slit2Y = doubleSlitY + slitGap / 2 + slitHeight / 2;
 
       ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
       ctx.lineWidth = 1;
       for (let i = 0; i < 12; i++) {
-        const offset = ((wavePhase + i * 20) % (screenX - slitX));
+        const offset = ((wavePhase + i * 20) % (screenX - doubleSlitX));
         const r = offset;
-        if (r > 0 && r < screenX - slitX) {
+        if (r > 0 && r < screenX - doubleSlitX) {
           ctx.beginPath();
-          ctx.arc(slitX, slit1Y, r, -Math.PI / 4, Math.PI / 4);
+          ctx.arc(doubleSlitX, slit1Y, r, -Math.PI / 4, Math.PI / 4);
           ctx.stroke();
           ctx.beginPath();
-          ctx.arc(slitX, slit2Y, r, -Math.PI / 4, Math.PI / 4);
+          ctx.arc(doubleSlitX, slit2Y, r, -Math.PI / 4, Math.PI / 4);
           ctx.stroke();
         }
       }
@@ -218,30 +239,30 @@ const InterferenceSimulation: React.FC<Props> = ({ params, isRunning, onReset })
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(slitX + 20, labelY1);
-      ctx.lineTo(slitX + 40, labelY1);
-      ctx.moveTo(slitX + 20, labelY2);
-      ctx.lineTo(slitX + 40, labelY2);
+      ctx.moveTo(doubleSlitX + 20, labelY1);
+      ctx.lineTo(doubleSlitX + 40, labelY1);
+      ctx.moveTo(doubleSlitX + 20, labelY2);
+      ctx.lineTo(doubleSlitX + 40, labelY2);
       ctx.stroke();
       ctx.setLineDash([]);
 
       ctx.strokeStyle = '#dc2626';
       ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(slitX + 30, labelY1);
-      ctx.lineTo(slitX + 30, labelY2);
+      ctx.moveTo(doubleSlitX + 30, labelY1);
+      ctx.lineTo(doubleSlitX + 30, labelY2);
       ctx.stroke();
 
       ctx.fillStyle = '#dc2626';
       ctx.font = '11px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`d=${slitDistanceMm.toFixed(2)}mm`, slitX + 45, (labelY1 + labelY2) / 2 + 4);
+      ctx.fillText(`d=${slitDistanceMm.toFixed(2)}mm`, doubleSlitX + 45, (labelY1 + labelY2) / 2 + 4);
 
       ctx.strokeStyle = '#059669';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([4, 4]);
       ctx.beginPath();
-      ctx.moveTo(slitX, height - 30);
+      ctx.moveTo(doubleSlitX, height - 30);
       ctx.lineTo(screenX, height - 30);
       ctx.stroke();
       ctx.setLineDash([]);
@@ -249,7 +270,7 @@ const InterferenceSimulation: React.FC<Props> = ({ params, isRunning, onReset })
       ctx.fillStyle = '#059669';
       ctx.font = '11px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`L=${screenDistanceCm.toFixed(0)}cm`, (slitX + screenX) / 2, height - 18);
+      ctx.fillText(`L=${screenDistanceCm.toFixed(0)}cm`, (doubleSlitX + screenX) / 2, height - 18);
 
       const fringeY = centerY + deltaX * fringeScale;
       ctx.strokeStyle = '#f59e0b';

@@ -11,7 +11,7 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
   const animRef = useRef<number>(0);
   const stateRef = useRef({
     time: 0,
-    magnetX: 150,
+    magnetX: 120,
     magnetVelocity: 0,
     direction: 1,
     fluxChangeRate: 0,
@@ -33,36 +33,36 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
     canvas.width = width;
     canvas.height = height;
 
-    const coilCenterX = 380;
-    const coilCenterY = 200;
-    const coilWidth = 80;
-    const coilHeight = 120;
+    const coilCenterX = 400;
+    const coilCenterY = 240;
+    const coilWidth = 120;
+    const coilHeight = 100;
 
     const drawMagnet = (x: number, y: number) => {
-      const magnetW = 50;
-      const magnetH = 100;
+      const magnetW = 120;
+      const magnetH = 40;
       
-      const nPoleGrad = ctx.createLinearGradient(x - magnetW / 2, y - magnetH / 2, x + magnetW / 2, y - magnetH / 2);
+      const nPoleGrad = ctx.createLinearGradient(x - magnetW / 2, y - magnetH / 2, x, y + magnetH / 2);
       nPoleGrad.addColorStop(0, '#dc2626');
       nPoleGrad.addColorStop(1, '#fca5a5');
       ctx.fillStyle = nPoleGrad;
       ctx.beginPath();
-      ctx.roundRect(x - magnetW / 2, y - magnetH / 2, magnetW, magnetH / 2, [8, 8, 0, 0]);
+      ctx.roundRect(x - magnetW / 2, y - magnetH / 2, magnetW / 2, magnetH, [8, 0, 0, 8]);
       ctx.fill();
       
-      const sPoleGrad = ctx.createLinearGradient(x - magnetW / 2, y, x + magnetW / 2, y);
+      const sPoleGrad = ctx.createLinearGradient(x, y - magnetH / 2, x + magnetW / 2, y + magnetH / 2);
       sPoleGrad.addColorStop(0, '#93c5fd');
       sPoleGrad.addColorStop(1, '#2563eb');
       ctx.fillStyle = sPoleGrad;
       ctx.beginPath();
-      ctx.roundRect(x - magnetW / 2, y, magnetW, magnetH / 2, [0, 0, 8, 8]);
+      ctx.roundRect(x, y - magnetH / 2, magnetW / 2, magnetH, [0, 8, 8, 0]);
       ctx.fill();
       
       ctx.fillStyle = '#fff';
-      ctx.font = 'bold 20px sans-serif';
+      ctx.font = 'bold 18px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('N', x, y - magnetH / 4 + 7);
-      ctx.fillText('S', x, y + magnetH / 4 + 7);
+      ctx.fillText('N', x - magnetW / 4, y + 6);
+      ctx.fillText('S', x + magnetW / 4, y + 6);
       
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 1;
@@ -110,33 +110,35 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
 
     const drawFieldLines = (magnetX: number, magnetY: number) => {
       const dist = Math.abs(magnetX - coilCenterX);
-      const intensity = Math.max(0, 1 - dist / 200);
+      const intensity = Math.max(0, 1 - dist / 250);
       
       ctx.strokeStyle = `rgba(59, 130, 246, ${0.3 + intensity * 0.5})`;
       ctx.lineWidth = 1.5;
       
-      const numLines = 5;
+      const numLines = 6;
       for (let i = 0; i < numLines; i++) {
-        const startY = magnetY - 40 + i * 20;
+        const offsetY = -35 + i * 14;
+        const startX = magnetX + 60;
+        const startY = magnetY + offsetY;
+        
         ctx.beginPath();
-        ctx.moveTo(magnetX + 25, startY);
+        ctx.moveTo(startX, startY);
         
-        const cp1x = magnetX + 60 + i * 5;
-        const cp1y = startY - 20;
-        const cp2x = coilCenterX - 40;
-        const cp2y = startY + (i - 2) * 15;
-        const endX = coilCenterX - coilWidth / 2;
-        const endY = coilCenterY + (i - 2) * 20;
+        const midX = (startX + coilCenterX - coilWidth / 2) / 2;
+        const midY = startY + (i - numLines / 2) * 8;
         
-        ctx.bezierCurveTo(cp1x, cp1y, cp2x, cp2y, endX, endY);
+        ctx.quadraticCurveTo(midX, midY, coilCenterX - coilWidth / 2, coilCenterY + offsetY * 0.8);
         ctx.stroke();
       }
       
       for (let i = 0; i < numLines; i++) {
-        const startY = magnetY - 40 + i * 20;
+        const offsetY = -35 + i * 14;
+        const startX = magnetX - 60;
+        const startY = magnetY + offsetY;
+        
         ctx.beginPath();
-        ctx.moveTo(magnetX - 25, startY);
-        ctx.quadraticCurveTo(magnetX - 50, startY + 5, magnetX - 60 - i * 3, magnetY);
+        ctx.moveTo(startX, startY);
+        ctx.quadraticCurveTo(startX - 30, magnetY, startX - 40 - i * 3, magnetY + offsetY * 0.5);
         ctx.stroke();
       }
     };
@@ -237,23 +239,23 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
       ctx.fillRect(0, 0, width, height);
 
       if (isRunning) {
-        drawFieldLines(stateRef.current.magnetX, 200);
+        drawFieldLines(stateRef.current.magnetX, 240);
       }
 
       drawCoil();
-      drawMagnet(stateRef.current.magnetX, 200);
+      drawMagnet(stateRef.current.magnetX, 240);
       drawGalvanometer();
 
       ctx.strokeStyle = '#92400e';
       ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(coilCenterX - coilWidth / 2 - 15, coilCenterY + coilHeight / 2 + 45);
-      ctx.lineTo(coilCenterX - coilWidth / 2 - 15, coilCenterY + coilHeight / 2 + 70);
-      ctx.lineTo(520, coilCenterY + coilHeight / 2 + 70);
+      ctx.moveTo(coilCenterX - coilWidth / 2 - 15, coilCenterY + coilHeight / 2 + 30);
+      ctx.lineTo(coilCenterX - coilWidth / 2 - 15, coilCenterY + coilHeight / 2 + 60);
+      ctx.lineTo(520, coilCenterY + coilHeight / 2 + 60);
       ctx.lineTo(520, 200);
-      ctx.moveTo(coilCenterX + coilWidth / 2 + 15, coilCenterY + coilHeight / 2 + 45);
-      ctx.lineTo(coilCenterX + coilWidth / 2 + 15, coilCenterY + coilHeight / 2 + 70);
-      ctx.lineTo(640, coilCenterY + coilHeight / 2 + 70);
+      ctx.moveTo(coilCenterX + coilWidth / 2 + 15, coilCenterY + coilHeight / 2 + 30);
+      ctx.lineTo(coilCenterX + coilWidth / 2 + 15, coilCenterY + coilHeight / 2 + 60);
+      ctx.lineTo(640, coilCenterY + coilHeight / 2 + 60);
       ctx.lineTo(640, 200);
       ctx.stroke();
 
@@ -300,8 +302,8 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
         stateRef.current.magnetVelocity = stateRef.current.direction * magnetSpeed;
         stateRef.current.magnetX += stateRef.current.magnetVelocity * dt;
 
-        if (stateRef.current.magnetX > 300) {
-          stateRef.current.magnetX = 300;
+        if (stateRef.current.magnetX > 480) {
+          stateRef.current.magnetX = 480;
           stateRef.current.direction = -1;
         }
         if (stateRef.current.magnetX < 120) {
@@ -310,7 +312,7 @@ const InductionSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
         }
 
         const distFromCoil = coilCenterX - stateRef.current.magnetX;
-        const flux = 10 / (1 + Math.abs(distFromCoil) / 50);
+        const flux = 10 / (1 + Math.abs(distFromCoil) / 80);
         stateRef.current.fluxChangeRate = Math.abs((flux - stateRef.current.lastFlux) / dt);
         stateRef.current.lastFlux = flux;
 

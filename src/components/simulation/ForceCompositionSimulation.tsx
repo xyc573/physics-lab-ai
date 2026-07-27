@@ -11,7 +11,7 @@ const ForceCompositionSimulation: React.FC<Props> = ({ params, isRunning, onRese
   const animRef = useRef<number>(0);
   const stateRef = useRef({
     time: 0,
-    animProgress: 0,
+    animProgress: 1,
   });
 
   const force1 = params.force1 || 50;

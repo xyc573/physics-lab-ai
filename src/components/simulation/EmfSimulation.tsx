@@ -124,59 +124,80 @@ const EmfSimulation: React.FC<Props> = ({ params, isRunning, onReset }) => {
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, width, height);
 
-      const circuitCX = 230;
-      const circuitCY = 200;
-      const circuitR = 90;
+      const circuitLeft = 80;
+      const circuitRight = 360;
+      const circuitTop = 80;
+      const circuitBottom = 320;
+      const circuitCX = (circuitLeft + circuitRight) / 2;
+      const circuitCY = (circuitTop + circuitBottom) / 2;
 
+      // 主回路导线（串联：电源+ → 外阻R → 电流表 → 开关 → 电源-）
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.arc(circuitCX, circuitCY, circuitR, 0, Math.PI * 2);
+      // 电源正极 → 上导线 → 外阻R上端
+      ctx.moveTo(circuitLeft, circuitTop - 20);
+      ctx.lineTo(circuitLeft, circuitTop);
+      ctx.lineTo(circuitRight, circuitTop);
+      // 外阻R
+      ctx.moveTo(circuitRight, circuitTop);
+      ctx.lineTo(circuitRight, circuitTop + 30);
+      ctx.moveTo(circuitRight, circuitBottom - 30);
+      ctx.lineTo(circuitRight, circuitBottom);
+      // 下导线 → 电流表 → 开关 → 电源负极
+      ctx.lineTo(circuitCX + 40, circuitBottom);
+      ctx.moveTo(circuitCX - 40, circuitBottom);
+      ctx.lineTo(circuitLeft - 30, circuitBottom);
+      ctx.lineTo(circuitLeft - 30, circuitBottom + 20);
       ctx.stroke();
 
-      const batteryX = circuitCX;
-      const batteryY = circuitCY - circuitR;
+      // 电源（含内阻r）
+      const batteryX = circuitLeft;
+      const batteryY = circuitCY;
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(batteryX - 12, batteryY - 5);
-      ctx.lineTo(batteryX - 12, batteryY + 5);
-      ctx.moveTo(batteryX + 12, batteryY - 8);
-      ctx.lineTo(batteryX + 12, batteryY + 8);
-      ctx.moveTo(batteryX - 18, batteryY);
-      ctx.lineTo(batteryX - 12, batteryY);
-      ctx.moveTo(batteryX + 12, batteryY);
-      ctx.lineTo(batteryX + 18, batteryY);
+      ctx.moveTo(batteryX - 15, batteryY - 40);
+      ctx.lineTo(batteryX - 15, batteryY - 10);
+      ctx.moveTo(batteryX + 15, batteryY - 40);
+      ctx.lineTo(batteryX + 15, batteryY - 10);
+      ctx.moveTo(batteryX - 15, batteryY + 10);
+      ctx.lineTo(batteryX - 15, batteryY + 40);
+      ctx.moveTo(batteryX + 15, batteryY + 10);
+      ctx.lineTo(batteryX + 15, batteryY + 40);
+      ctx.moveTo(batteryX - 25, batteryY);
+      ctx.lineTo(batteryX - 15, batteryY);
+      ctx.moveTo(batteryX + 15, batteryY);
+      ctx.lineTo(batteryX + 25, batteryY);
       ctx.stroke();
       
       ctx.fillStyle = '#dc2626';
-      ctx.font = 'bold 12px sans-serif';
+      ctx.font = 'bold 14px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('+', batteryX - 3, batteryY - 15);
+      ctx.fillText('+', batteryX - 5, batteryY - 50);
       ctx.fillStyle = '#2563eb';
-      ctx.fillText('−', batteryX + 3, batteryY - 15);
+      ctx.fillText('−', batteryX + 5, batteryY - 50);
       ctx.fillStyle = '#1e293b';
-      ctx.font = '10px sans-serif';
-      ctx.fillText(`E=${emf}V`, batteryX, batteryY - 28);
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(`E=${emf}V`, batteryX, batteryY - 65);
 
+      // 内阻标识
       ctx.strokeStyle = '#ef4444';
       ctx.lineWidth = 1.5;
-      ctx.setLineDash([3, 2]);
-      ctx.beginPath();
-      ctx.arc(batteryX + 6, batteryY + 15, 20, -Math.PI / 2 - 0.3, -Math.PI / 2 + 1.5);
-      ctx.stroke();
+      ctx.setLineDash([4, 3]);
+      ctx.strokeRect(batteryX - 22, batteryY - 5, 44, 35);
       ctx.setLineDash([]);
       ctx.fillStyle = '#ef4444';
-      ctx.font = '9px sans-serif';
-      ctx.fillText(`r=${internalResistance}Ω`, batteryX + 28, batteryY + 12);
+      ctx.font = 'bold 10px sans-serif';
+      ctx.fillText(`r=${internalResistance}Ω`, batteryX + 45, batteryY + 15);
 
-      const resistorX = circuitCX + circuitR;
+      // 外阻R
+      const resistorX = circuitRight;
       const resistorY = circuitCY;
-      
-      const zigzagH = 30;
-      const zigzagCount = 5;
-      const zigzagW = 15;
+      const zigzagH = 50;
+      const zigzagCount = 6;
+      const zigzagW = 18;
       ctx.strokeStyle = '#334155';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -192,33 +213,97 @@ const EmfSimulation: React.FC<Props> = ({ params, isRunning, onReset }) => {
       ctx.stroke();
       
       ctx.fillStyle = '#1e293b';
-      ctx.font = '10px sans-serif';
+      ctx.font = 'bold 11px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`R=${externalResistance}Ω`, resistorX + 15, resistorY + 3);
+      ctx.fillText(`R=${externalResistance}Ω`, resistorX + 25, resistorY + 5);
 
+      // 电流表（串联在下方回路）
       const ammeterX = circuitCX;
-      const ammeterY = circuitCY + circuitR;
-      drawMeter(ammeterX, ammeterY + 5, 28, current, emf / internalResistance * 1.2, '电流表', 'A', '#f97316');
+      const ammeterY = circuitBottom;
+      drawMeter(ammeterX, ammeterY, 28, current, emf / internalResistance * 1.2, '电流表', 'A', '#f97316');
 
-      const voltmeterX = circuitCX - circuitR - 40;
+      // 开关
+      const switchX = circuitLeft - 30;
+      const switchY = circuitBottom - 10;
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(switchX - 12, switchY, 4, 0, Math.PI * 2);
+      ctx.arc(switchX + 12, switchY, 4, 0, Math.PI * 2);
+      ctx.fill();
+      
+      if (isRunning) {
+        ctx.strokeStyle = '#22c55e';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(switchX - 12, switchY);
+        ctx.lineTo(switchX + 12, switchY);
+        ctx.stroke();
+      } else {
+        ctx.strokeStyle = '#ef4444';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(switchX - 12, switchY);
+        ctx.lineTo(switchX + 8, switchY - 18);
+        ctx.stroke();
+      }
+      ctx.fillStyle = '#475569';
+      ctx.font = '10px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('开关 S', switchX, switchY + 20);
+
+      // 电压表V（并联在电源两端，测量路端电压）
+      const voltmeterX = circuitLeft - 70;
       const voltmeterY = circuitCY;
       drawMeter(voltmeterX, voltmeterY, 32, terminalVoltage, emf * 1.2, '电压表', 'V', '#3b82f6');
 
+      // 电压表并联导线
       ctx.strokeStyle = '#3b82f6';
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 3]);
       ctx.beginPath();
-      ctx.moveTo(circuitCX - circuitR, circuitCY - 25);
-      ctx.lineTo(voltmeterX + 20, voltmeterY - 20);
-      ctx.moveTo(circuitCX - circuitR, circuitCY + 25);
-      ctx.lineTo(voltmeterX + 20, voltmeterY + 20);
+      ctx.moveTo(circuitLeft, circuitTop);
+      ctx.lineTo(circuitLeft - 40, circuitTop);
+      ctx.lineTo(circuitLeft - 40, voltmeterY - 25);
+      ctx.moveTo(circuitLeft - 40, voltmeterY + 25);
+      ctx.lineTo(circuitLeft - 40, circuitBottom);
+      ctx.lineTo(circuitLeft, circuitBottom);
       ctx.stroke();
+      ctx.setLineDash([]);
 
+      // 电流流动动画
       if (isRunning && current > 0.001) {
-        const electronSpeed = stateRef.current.time * 80;
-        for (let i = 0; i < 8; i++) {
-          const angle = (electronSpeed / (2 * Math.PI * circuitR) + i / 8) * Math.PI * 2;
-          const ex = circuitCX + Math.cos(angle) * circuitR;
-          const ey = circuitCY + Math.sin(angle) * circuitR;
+        const pathLen = 900;
+        const electronSpeed = stateRef.current.time * 60;
+        for (let i = 0; i < 10; i++) {
+          const progress = ((electronSpeed + i * (pathLen / 10)) % pathLen) / pathLen;
+          let ex, ey;
+          
+          if (progress < 0.08) {
+            const t = progress / 0.08;
+            ex = circuitLeft;
+            ey = circuitTop - 20 + t * 20;
+          } else if (progress < 0.35) {
+            const t = (progress - 0.08) / 0.27;
+            ex = circuitLeft + t * (circuitRight - circuitLeft);
+            ey = circuitTop;
+          } else if (progress < 0.42) {
+            const t = (progress - 0.35) / 0.07;
+            ex = circuitRight;
+            ey = circuitTop + 30 + t * (circuitBottom - 30 - circuitTop - 30);
+          } else if (progress < 0.65) {
+            const t = (progress - 0.42) / 0.23;
+            ex = circuitRight - t * (circuitRight - (circuitCX + 40));
+            ey = circuitBottom;
+          } else if (progress < 0.72) {
+            const t = (progress - 0.65) / 0.07;
+            ex = circuitCX - 40 - t * ((circuitCX - 40) - (circuitLeft - 30));
+            ey = circuitBottom;
+          } else {
+            const t = (progress - 0.72) / 0.28;
+            ex = circuitLeft - 30;
+            ey = circuitBottom - t * (circuitBottom - (circuitTop + 30));
+          }
+          
           ctx.fillStyle = '#60a5fa';
           ctx.beginPath();
           ctx.arc(ex, ey, 3, 0, Math.PI * 2);
