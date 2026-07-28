@@ -16,12 +16,12 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
 
   const measuredValue = params.measuredValue || 5;
   const range = params.range || 10;
-  const mode = params.mode || 0;
+  const mode = Math.floor(params.mode || 1) - 1;
 
   const modes = ['直流电压', '直流电流', '电阻'];
-  const modeNames = modes[Math.floor(Math.min(Math.max(mode, 0), 2))];
+  const modeNames = modes[Math.min(Math.max(mode, 0), 2)];
   const ratio = Math.min(measuredValue / range, 1);
-  const isOhmMode = Math.floor(mode) === 2;
+  const isOhmMode = mode === 2;
 
   const targetRatio = isOhmMode
     ? (measuredValue <= 0 ? 0 : 1 - 1 / (1 + measuredValue / 30))
@@ -131,7 +131,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
         ctx.textAlign = 'center';
         ctx.fillText('Ω', meterX, meterY - 45);
       } else {
-        const isVoltMode = Math.floor(mode) === 0;
+        const isVoltMode = mode === 0;
         const scaleColor = isVoltMode ? '#1e40af' : '#92400e';
         const majorTicks = 10;
         const minorTicks = 50;
@@ -246,7 +246,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
         -Math.PI / 2 + Math.PI / 9,
         -Math.PI / 2 + Math.PI / 3
       ];
-      const labelIndex = Math.floor(mode) + 1;
+      const labelIndex = mode + 1;
 
       const knobAngle = rangeAngles[labelIndex];
       ctx.strokeStyle = '#fbbf24';
@@ -326,7 +326,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
       ctx.fillStyle = '#4ade80';
       ctx.fillText(`模式: ${modeNames}`, displayX + 15, displayY + 30);
       ctx.fillStyle = '#60a5fa';
-      ctx.fillText(`量程: ${range} ${isOhmMode ? 'Ω' : Math.floor(mode) === 0 ? 'V' : 'A'}`, displayX + 15, displayY + 52);
+      ctx.fillText(`量程: ${range} ${isOhmMode ? 'Ω' : mode === 0 ? 'V' : 'A'}`, displayX + 15, displayY + 52);
       ctx.fillStyle = '#f472b6';
       ctx.fillText(`测量值: ${measuredValue}`, displayX + 15, displayY + 74);
       ctx.fillStyle = '#fbbf24';
@@ -392,7 +392,7 @@ const MultimeterSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =
     return () => {
       cancelAnimationFrame(animRef.current);
     };
-  }, [isRunning, measuredValue, range, mode, ratio, modeNames, targetRatio, isOhmMode]);
+  }, [isRunning, params.measuredValue, params.range, params.mode]);
 
   return (
     <div className="relative">

@@ -763,7 +763,7 @@ const LengthMeasurementSimulation: React.FC<Props> = ({ params, isRunning, onRes
     return () => {
       cancelAnimationFrame(animRef.current);
     };
-  }, [isRunning, objectLength, instrument, objectLengthMm, mainReadingCm, vernierReadingMm, totalReadingCm, precision, fixedReadingMm, movableReadingMm, thimbleAlignedIndex]);
+  }, [isRunning, params.objectLength, params.instrument]);
 
   return (
     <div className="relative">

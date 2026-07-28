@@ -62,11 +62,15 @@ const Simulation = () => {
   const [isRunning, setIsRunning] = React.useState(false);
   const [params, setParams] = React.useState<Record<string, number>>({});
   const [hasInteracted, setHasInteracted] = React.useState(false);
+  const completeTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
 
   React.useEffect(() => {
     if (simConfig) {
       setParams(simConfig.initialParams);
     }
+    return () => {
+      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+    };
   }, [simConfig]);
 
   if (!experiment || !simConfig) {
@@ -97,7 +101,8 @@ const Simulation = () => {
     setIsRunning(!isRunning);
     setHasInteracted(true);
     if (!record.simulationCompleted) {
-      setTimeout(() => markSimulationCompleted(id), 2000);
+      if (completeTimeoutRef.current) clearTimeout(completeTimeoutRef.current);
+      completeTimeoutRef.current = setTimeout(() => markSimulationCompleted(id), 2000);
     }
   };
 

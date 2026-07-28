@@ -18,9 +18,9 @@ const ForceCompositionSimulation: React.FC<Props> = ({ params, isRunning, onRese
   const force2 = params.force2 || 30;
   const angle = (params.angle || 60) * Math.PI / 180;
 
-  const scale = 3;
-  const originX = 200;
-  const originY = 320;
+  const scale = 30;
+  const originX = 180;
+  const originY = 250;
 
   const f1x = force1 * scale;
   const f1y = 0;

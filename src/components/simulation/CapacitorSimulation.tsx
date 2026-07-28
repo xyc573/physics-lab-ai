@@ -21,7 +21,7 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
   });
 
   const capacitance = (params.capacitance || 100) * 1e-6;
-  const resistance = (params.resistance || 10) * 1e3;
+  const resistance = params.resistance || 10000;
   const sourceVoltage = params.voltage || 12;
 
   const tau = resistance * capacitance;
@@ -147,7 +147,7 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
       ctx.fillStyle = '#1e293b';
       ctx.font = 'bold 10px sans-serif';
       ctx.textAlign = 'left';
-      ctx.fillText(`R=${params.resistance || 10}kΩ`, resistorX + 20, resistorY + 5);
+      ctx.fillText(`R=${params.resistance || 10000}Ω`, resistorX + 20, resistorY + 5);
 
       const capX = circuitCX + 30;
       const capY = circuitBottom + 55;
@@ -464,7 +464,7 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
       ctx.font = '11px monospace';
       ctx.fillText(`电源 E = ${sourceVoltage.toFixed(1)} V`, 440, 132);
       ctx.fillStyle = '#60a5fa';
-      ctx.fillText(`电阻 R = ${params.resistance || 10} kΩ`, 440, 152);
+      ctx.fillText(`电阻 R = ${params.resistance || 10000} Ω`, 440, 152);
       ctx.fillStyle = '#f472b6';
       ctx.fillText(`电容 C = ${params.capacitance || 100} μF`, 440, 172);
       ctx.fillStyle = '#a78bfa';
@@ -495,7 +495,7 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
         const dt = Math.min((currentTime - lastTime) / 1000, 0.03);
         lastTime = currentTime;
 
-        if (!stateRef.current.switchClosed && stateRef.current.time > 0.5) {
+        if (!stateRef.current.switchClosed) {
           stateRef.current.switchClosed = true;
           stateRef.current.time = 0;
         }
@@ -536,8 +536,6 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
             stateRef.current.voltageData = [{ t: 0, v: 0 }];
             stateRef.current.currentData = [{ t: 0, i: sourceVoltage / resistance }];
           }
-        } else {
-          stateRef.current.time += dt;
         }
       } else {
         lastTime = currentTime;
@@ -552,7 +550,7 @@ const CapacitorSimulation: React.FC<Props> = ({ params, isRunning, onReset }) =>
     return () => {
       cancelAnimationFrame(animRef.current);
     };
-  }, [isRunning, capacitance, resistance, sourceVoltage, tau, params.capacitance, params.resistance, params.voltage, onReset]);
+  }, [isRunning, params.capacitance, params.resistance, params.voltage]);
 
   useEffect(() => {
     stateRef.current.time = 0;

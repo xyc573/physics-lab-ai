@@ -10,6 +10,7 @@ export interface PracticeStats {
   totalQuestions: number;
   correctCount: number;
   wrongQuestionIds: string[];
+  answeredQuestionIds: string[];
   difficultyStats: Record<string, DifficultyStats>;
 }
 
@@ -47,6 +48,7 @@ const createEmptyRecord = (experimentId: string): ExperimentRecord => ({
     totalQuestions: 0,
     correctCount: 0,
     wrongQuestionIds: [],
+    answeredQuestionIds: [],
     difficultyStats: {},
   },
   lastStudyTime: new Date().toISOString(),
@@ -95,8 +97,8 @@ export const useLearningStore = create<LearningState>()(
           const stats = record.practiceStats;
           const diffStats = stats.difficultyStats[difficulty] || { total: 0, correct: 0 };
           
-          const alreadyAnswered = stats.wrongQuestionIds.includes(questionId) || 
-            (stats.totalQuestions > 0 && stats.correctCount + stats.wrongQuestionIds.length >= stats.totalQuestions);
+          const existingAnsweredIds = stats.answeredQuestionIds || [];
+          const alreadyAnswered = existingAnsweredIds.includes(questionId);
           
           const newWrongIds = isCorrect
             ? stats.wrongQuestionIds.filter(id => id !== questionId)
@@ -116,13 +118,18 @@ export const useLearningStore = create<LearningState>()(
                     ? (alreadyAnswered ? stats.correctCount : stats.correctCount + 1)
                     : stats.correctCount,
                   wrongQuestionIds: newWrongIds,
-                  difficultyStats: {
-                    ...stats.difficultyStats,
-                    [difficulty]: {
-                      total: diffStats.total + 1,
-                      correct: diffStats.correct + (isCorrect ? 1 : 0),
-                    },
-                  },
+                  answeredQuestionIds: alreadyAnswered 
+                    ? existingAnsweredIds 
+                    : [...existingAnsweredIds, questionId],
+                  difficultyStats: alreadyAnswered
+                    ? stats.difficultyStats
+                    : {
+                        ...stats.difficultyStats,
+                        [difficulty]: {
+                          total: diffStats.total + 1,
+                          correct: diffStats.correct + (isCorrect ? 1 : 0),
+                        },
+                      },
                 },
               },
             },
