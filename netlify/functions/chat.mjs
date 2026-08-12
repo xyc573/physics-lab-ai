@@ -9,7 +9,7 @@ export default async (event) => {
   }
 
   // Origin 校验：拒绝跨站调用（防止盗用额度）
-  const origin = event.headers.origin || event.headers['x-forwarded-host'] || '';
+  const origin = event.headers.origin || '';
   const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
   if (origin && allowedOrigin && origin !== allowedOrigin) {
     return { statusCode: 403, body: JSON.stringify({ error: 'Forbidden' }) };
