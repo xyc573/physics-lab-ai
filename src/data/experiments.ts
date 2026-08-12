@@ -1394,13 +1394,11 @@ export const experiments: Experiment[] = [
     simulation: {
       type: 'length',
       initialParams: {
-        mainScale: 10,
-        vernierScale: 5,
-        instrument: 2,
+        objectLength: 2.42,
+        instrument: 1,
       },
       paramRanges: {
-        mainScale: { min: 0, max: 50, step: 0.5, label: '主尺读数', unit: 'mm' },
-        vernierScale: { min: 0, max: 50, step: 1, label: '副尺读数' },
+        objectLength: { min: 0.1, max: 5, step: 0.01, label: '物体长度', unit: 'cm' },
         instrument: { min: 1, max: 3, step: 1, label: '测量工具（1游标卡尺2螺旋测微器3刻度尺）' },
       },
     },

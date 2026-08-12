@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>电容器充放电 · 带暂停功能</title>
+    <!-- Chart.js 轻量绘图 -->
+    <script src="./chart.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #f4f8fb 0%, #e3ecf3 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+        }
+        .sim-card {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(6px);
+            border-radius: 48px;
+            padding: 28px 30px 36px;
+            box-shadow: 0 20px 40px rgba(0, 20, 30, 0.2), 0 6px 12px rgba(0,0,0,0.06);
+            border: 1px solid rgba(255,255,255,0.5);
+        }
+        h1 {
+            font-weight: 500;
+            font-size: 2rem;
+            color: #0b2a3b;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 0;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px dashed #b6d0e0;
+        }
+        h1 small {
+            font-size: 1rem;
+            font-weight: 400;
+            color: #2b5d7a;
+            margin-left: auto;
+            background: #d7e6f0;
+            padding: 4px 18px;
+            border-radius: 40px;
+        }
+        .circuit-area {
+            background: #ffffffcc;
+            backdrop-filter: blur(2px);
+            border-radius: 36px;
+            padding: 12px 12px 6px 12px;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.04), 0 8px 18px rgba(0,20,30,0.10);
+            margin-bottom: 20px;
+        }
+        .circuit-svg-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+        svg {
+            width: 100%;
+            height: auto;
+            max-width: 760px;
+            display: block;
+            background: #fafcff;
+            border-radius: 28px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.02);
+        }
+        .control-panel {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px 24px;
+            background: #eef5fa;
+            padding: 14px 24px;
+            border-radius: 60px;
+            margin: 10px 0 18px 0;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            border: 1px solid #ffffffaa;
+        }
+        .param-group {
+            display: flex;
+            align-items: center;
+            gap: 10px 16px;
+            flex-wrap: wrap;
+            background: #ffffffcc;
+            padding: 4px 18px 4px 14px;
+            border-radius: 40px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        .param-group label {
+            font-weight: 500;
+            color: #15455e;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .param-group input[type="range"] {
+            width: 100px;
+            height: 4px;
+            background: #b6d2e8;
+            border-radius: 10px;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .param-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #1f6e96;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 2px 8px #1f6e9640;
+            border: 2px solid white;
+        }
+        .param-group .value-badge {
+            min-width: 48px;
+            background: #d4e3ef;
+            padding: 2px 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #003153;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+        .switch-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #dce8f2;
+            padding: 4px 14px 4px 18px;
+            border-radius: 60px;
+        }
+        .switch-btn {
+            background: white;
+            border: none;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #144a66;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+            letter-spacing: 0.5px;
+        }
+        .switch-btn.active {
+            background: #1b6b93;
+            color: white;
+            box-shadow: 0 6px 14px #1b6b9350;
+            border-color: #ffffff80;
+        }
+        .switch-btn:active { transform: scale(0.96); }
+        .pause-btn {
+            background: #f0c27a;
+            border: none;
+            padding: 6px 24px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 1rem;
+            color: #4d2e0e;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid #e8b86d;
+            letter-spacing: 0.5px;
+        }
+        .pause-btn:hover { background: #eab868; transform: scale(1.02); }
+        .pause-btn.paused {
+            background: #8fc9b0;
+            border-color: #6aad92;
+            color: #1a4a3a;
+        }
+        .chart-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 14px;
+        }
+        .chart-box {
+            background: #ffffffdd;
+            backdrop-filter: blur(2px);
+            padding: 12px 12px 4px 12px;
+            border-radius: 32px;
+            box-shadow: 0 4px 12px rgba(0, 20, 30, 0.08);
+            border: 1px solid #ffffff;
+        }
+        .chart-box h3 {
+            margin: 0 0 2px 8px;
+            font-weight: 400;
+            color: #1c5777;
+            font-size: 0.95rem;
+            letter-spacing: 0.3px;
+        }
+        .chart-box canvas {
+            width: 100% !important;
+            height: auto !important;
+            max-height: 180px;
+        }
+        .status-badge {
+            display: inline-block;
+            background: #d2e3ef;
+            padding: 4px 22px;
+            border-radius: 60px;
+            font-weight: 500;
+            color: #003153;
+        }
+        @media (max-width: 780px) {
+            .chart-grid { grid-template-columns: 1fr; }
+            .control-panel { flex-direction: column; align-items: stretch; gap: 12px; }
+            .param-group { justify-content: space-between; }
+        }
+        .footnote {
+            text-align: right;
+            font-size: 0.8rem;
+            color: #3b6d8a;
+            margin-top: 8px;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+<div class="sim-card">
+    <h1>
+        ⚡ 电容器充放电
+        <small>带暂停 · 持续观测</small>
+    </h1>
+
+    <!-- 电路图 SVG -->
+    <div class="circuit-area">
+        <div class="circuit-svg-container">
+            <svg viewBox="0 0 640 260" xmlns="http://www.w3.org/2000/svg">
+                <rect width="640" height="260" fill="#fafcff" rx="20" />
+                <line x1="50" y1="90" x2="130" y2="90" stroke="#1f4963" stroke-width="3" />
+                <line x1="130" y1="90" x2="130" y2="150" stroke="#1f4963" stroke-width="3" />
+                <line x1="130" y1="150" x2="170" y2="150" stroke="#1f4963" stroke-width="3" />
+                <line x1="170" y1="150" x2="170" y2="90" stroke="#1f4963" stroke-width="3" />
+                <line x1="170" y1="90" x2="230" y2="90" stroke="#1f4963" stroke-width="3" />
+                <rect x="230" y="68" width="80" height="44" rx="3" fill="#e7dcc8" stroke="#7a5d3c" stroke-width="2.5" />
+                <text x="248" y="96" font-size="20" font-weight="600" fill="#3f2c1a">R</text>
+                <line x1="310" y1="90" x2="370" y2="90" stroke="#1f4963" stroke-width="3" />
+                <line x1="370" y1="62" x2="370" y2="118" stroke="#1f4963" stroke-width="3.5" />
+                <line x1="398" y1="62" x2="398" y2="118" stroke="#1f4963" stroke-width="3.5" />
+                <text x="375" y="148" font-size="20" font-weight="600" fill="#1f4963">C</text>
+                <line x1="398" y1="90" x2="460" y2="90" stroke="#1f4963" stroke-width="3" />
+                <circle cx="500" cy="60" r="5" fill="#1f4963" />
+                <circle cx="500" cy="130" r="5" fill="#1f4963" />
+                <circle cx="500" cy="95" r="6" fill="#1f4963" />
+                <line x1="460" y1="90" x2="500" y2="95" stroke="#1f4963" stroke-width="3" />
+                <line id="switch-blade" x1="500" y1="95" x2="540" y2="60" stroke="#b22222" stroke-width="4.5" stroke-linecap="round" />
+                <line id="switch-blade-dis" x1="500" y1="95" x2="540" y2="130" stroke="#b22222" stroke-width="4.5" stroke-linecap="round" opacity="0" />
+                <line x1="540" y1="60" x2="590" y2="60" stroke="#1f4963" stroke-width="3" />
+                <line x1="540" y1="130" x2="590" y2="130" stroke="#1f4963" stroke-width="3" />
+                <line x1="590" y1="60" x2="590" y2="80" stroke="#1f4963" stroke-width="3" />
+                <line x1="570" y1="80" x2="610" y2="80" stroke="#1f4963" stroke-width="3.5" />
+                <line x1="580" y1="80" x2="600" y2="80" stroke="#1f4963" stroke-width="3.5" />
+                <line x1="590" y1="80" x2="590" y2="100" stroke="#1f4963" stroke-width="3" />
+                <line x1="575" y1="100" x2="605" y2="100" stroke="#1f4963" stroke-width="3" />
+                <line x1="575" y1="100" x2="605" y2="100" stroke="#1f4963" stroke-width="2" />
+                <line x1="590" y1="100" x2="590" y2="130" stroke="#1f4963" stroke-width="3" />
+                <line x1="50" y1="200" x2="590" y2="200" stroke="#1f4963" stroke-width="3" />
+                <line x1="50" y1="90" x2="50" y2="200" stroke="#1f4963" stroke-width="3" />
+                <line x1="590" y1="130" x2="590" y2="200" stroke="#1f4963" stroke-width="3" />
+                <text id="state-label" x="320" y="225" font-size="22" font-weight="600" fill="#1b6b93" text-anchor="middle">⚡ 充电</text>
+                <text x="50" y="40" font-size="14" fill="#2b5d7a">+</text>
+                <text x="605" y="40" font-size="14" fill="#2b5d7a">−</text>
+            </svg>
+        </div>
+    </div>
+
+    <!-- 控制界面 -->
+    <div class="control-panel">
+        <div class="param-group">
+            <label>🔋 V <input type="range" id="voltage-slider" min="1" max="15" step="0.1" value="9" /></label>
+            <span class="value-badge" id="voltage-display">9.0 V</span>
+        </div>
+        <div class="param-group">
+            <label>⚡ R <input type="range" id="resistance-slider" min="0.5" max="20" step="0.1" value="5" /></label>
+            <span class="value-badge" id="resistance-display">5.0 kΩ</span>
+        </div>
+        <div class="param-group">
+            <label>🧲 C <input type="range" id="capacitance-slider" min="0.2" max="5" step="0.1" value="1" /></label>
+            <span class="value-badge" id="capacitance-display">1.0 µF</span>
+        </div>
+        <div class="switch-group">
+            <button id="charge-btn" class="switch-btn active">🔌 充电</button>
+            <button id="discharge-btn" class="switch-btn">🔋 放电</button>
+        </div>
+        <button id="pause-btn" class="pause-btn">⏸️ 暂停</button>
+    </div>
+
+    <!-- 图表区 -->
+    <div class="chart-grid">
+        <div class="chart-box"><h3>📈 电压 - 时间</h3><canvas id="voltageChart" width="400" height="160"></canvas></div>
+        <div class="chart-box"><h3>📊 电流 - 时间</h3><canvas id="currentChart" width="400" height="160"></canvas></div>
+    </div>
+    <div class="footnote">● 单刀双掷开关 · 实时调节 R, C, V · 点击暂停定格图像</div>
+</div>
+
+<script>
+    (function(){
+        // DOM refs
+        const voltageSlider = document.getElementById('voltage-slider');
+        const resistanceSlider = document.getElementById('resistance-slider');
+        const capacitanceSlider = document.getElementById('capacitance-slider');
+        const voltageDisplay = document.getElementById('voltage-display');
+        const resistanceDisplay = document.getElementById('resistance-display');
+        const capacitanceDisplay = document.getElementById('capacitance-display');
+        const chargeBtn = document.getElementById('charge-btn');
+        const dischargeBtn = document.getElementById('discharge-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const stateLabel = document.getElementById('state-label');
+        const bladeCharge = document.getElementById('switch-blade');
+        const bladeDischarge = document.getElementById('switch-blade-dis');
+
+        // 状态
+        let mode = 'charge'; 
+        let voltage = 9.0;   
+        let resistance = 5.0; 
+        let capacitance = 1.0; 
+        let isPaused = false;
+
+        // 仿真数据
+        let timeData = [];
+        let voltageData = [];
+        let currentData = [];
+        let timeCounter = 0;
+        const MAX_POINTS = 800;
+
+        // 当前状态
+        let vc = 0.0;        
+        let ic = 0.0;        
+
+        let voltageChart, currentChart;
+        let intervalId = null;
+
+        function initCharts() {
+            const ctxV = document.getElementById('voltageChart').getContext('2d');
+            const ctxI = document.getElementById('currentChart').getContext('2d');
+
+            voltageChart = new Chart(ctxV, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '电压 (V)',
+                        data: [],
+                        borderColor: '#1f6e96',
+                        backgroundColor: 'rgba(31, 110, 150, 0.06)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            display: true, 
+                            grid: { color: '#d9e3ed' }, 
+                            title: { display: true, text: '时间 (ms)' },
+                            min: 0,
+                            max: undefined,
+                        },
+                        y: { 
+                            display: true, 
+                            grid: { color: '#d9e3ed' }, 
+                            title: { display: true, text: 'V' },
+                            min: 0,
+                            max: undefined,
+                        }
+                    }
+                }
+            });
+
+            currentChart = new Chart(ctxI, {
+                type: 'line',
+                data: {
+                    labels: [],
+                    datasets: [{
+                        label: '电流 (mA)',
+                        data: [],
+                        borderColor: '#b33e3e',
+                        backgroundColor: 'rgba(179, 62, 62, 0.04)',
+                        borderWidth: 3,
+                        pointRadius: 0,
+                        tension: 0.1,
+                        fill: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { 
+                            display: true, 
+                            grid: { color: '#d9e3ed' }, 
+                            title: { display: true, text: '时间 (ms)' },
+                            min: 0,
+                            max: undefined,
+                        },
+                        y: { 
+                            display: true, 
+                            grid: { color: '#d9e3ed' }, 
+                            title: { display: true, text: 'mA' },
+                            min: undefined,
+                            max: undefined,
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetSimData() {
+            timeData = [];
+            voltageData = [];
+            currentData = [];
+            timeCounter = 0;
+            if (mode === 'charge') {
+                vc = 0.0;
+                ic = voltage / resistance;
+            } else { 
+                vc = voltage; 
+                ic = -vc / resistance;
+            }
+            timeData.push(0);
+            voltageData.push(vc);
+            currentData.push(ic);
+            updateCharts();
+        }
+
+        function stepSimulation() {
+            if (isPaused) return;  // 暂停时不做任何更新
+
+            const dt = 0.3; 
+            const R = resistance; 
+            const C = capacitance; 
+            const V = voltage; 
+            const tau = R * C; 
+
+            let newVc, newIc;
+            if (mode === 'charge') {
+                newVc = vc + (V - vc) / tau * dt;
+                newIc = (V - newVc) / R;
+                if (newVc > V) newVc = V;
+            } else { 
+                newVc = vc - vc / tau * dt;
+                newIc = -newVc / R;
+                if (newVc < 0) newVc = 0;
+            }
+            if (newVc < 0) newVc = 0;
+            if (mode === 'charge' && newVc > V) newVc = V;
+
+            vc = newVc;
+            ic = (mode === 'charge') ? (V - vc) / R : -vc / R;
+
+            timeCounter += dt;
+            timeData.push(timeCounter);
+            voltageData.push(vc);
+            currentData.push(ic);
+
+            if (timeData.length > MAX_POINTS) {
+                const removeCount = timeData.length - MAX_POINTS;
+                timeData.splice(0, removeCount);
+                voltageData.splice(0, removeCount);
+                currentData.splice(0, removeCount);
+            }
+
+            updateCharts();
+        }
+
+        function updateCharts() {
+            voltageChart.data.labels = timeData.map(t => t.toFixed(1));
+            voltageChart.data.datasets[0].data = voltageData;
+            const maxV = Math.max(...voltageData, 0.5);
+            voltageChart.options.scales.y.max = Math.ceil(maxV * 1.2);
+            voltageChart.update('none');
+
+            currentChart.data.labels = timeData.map(t => t.toFixed(1));
+            currentChart.data.datasets[0].data = currentData;
+            const maxI = Math.max(...currentData.map(Math.abs), 0.2);
+            currentChart.options.scales.y.max = Math.ceil(maxI * 1.3);
+            currentChart.options.scales.y.min = -Math.ceil(maxI * 1.3);
+            currentChart.update('none');
+
+            updateSwitchDisplay();
+            stateLabel.textContent = mode === 'charge' ? '⚡ 充电' : '🔋 放电';
+            stateLabel.style.fill = mode === 'charge' ? '#1b6b93' : '#a64d3a';
+        }
+
+        function updateSwitchDisplay() {
+            if (mode === 'charge') {
+                bladeCharge.setAttribute('opacity', '1');
+                bladeDischarge.setAttribute('opacity', '0');
+                bladeCharge.setAttribute('x2', '540');
+                bladeCharge.setAttribute('y2', '60');
+            } else {
+                bladeCharge.setAttribute('opacity', '0');
+                bladeDischarge.setAttribute('opacity', '1');
+                bladeDischarge.setAttribute('x2', '540');
+                bladeDischarge.setAttribute('y2', '130');
+            }
+        }
+
+        function fullReset() {
+            if (mode === 'charge') {
+                vc = 0.0;
+                ic = voltage / resistance;
+            } else {
+                vc = voltage;
+                ic = -vc / resistance;
+            }
+            timeData = [0];
+            voltageData = [vc];
+            currentData = [ic];
+            timeCounter = 0;
+            updateCharts();
+        }
+
+        function onParamChange() {
+            voltage = parseFloat(voltageSlider.value);
+            resistance = parseFloat(resistanceSlider.value);
+            capacitance = parseFloat(capacitanceSlider.value);
+            voltageDisplay.textContent = voltage.toFixed(1) + ' V';
+            resistanceDisplay.textContent = resistance.toFixed(1) + ' kΩ';
+            capacitanceDisplay.textContent = capacitance.toFixed(1) + ' µF';
+            // 如果暂停状态，参数变化时重置并保持暂停
+            fullReset();
+        }
+
+        function setMode(newMode) {
+            if (newMode === mode) return;
+            mode = newMode;
+            chargeBtn.classList.toggle('active', mode === 'charge');
+            dischargeBtn.classList.toggle('active', mode === 'discharge');
+            fullReset();
+        }
+
+        function togglePause() {
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? '▶️ 继续' : '⏸️ 暂停';
+            pauseBtn.classList.toggle('paused', isPaused);
+            // 如果继续，立即更新一次画面
+            if (!isPaused) {
+                updateCharts();
+            }
+        }
+
+        // 绑定控件
+        voltageSlider.addEventListener('input', onParamChange);
+        resistanceSlider.addEventListener('input', onParamChange);
+        capacitanceSlider.addEventListener('input', onParamChange);
+        chargeBtn.addEventListener('click', () => setMode('charge'));
+        dischargeBtn.addEventListener('click', () => setMode('discharge'));
+        pauseBtn.addEventListener('click', togglePause);
+
+        function startSimulation() {
+            if (intervalId) clearInterval(intervalId);
+            intervalId = setInterval(() => {
+                stepSimulation();
+            }, 20); 
+        }
+
+        function init() {
+            initCharts();
+            voltage = parseFloat(voltageSlider.value);
+            resistance = parseFloat(resistanceSlider.value);
+            capacitance = parseFloat(capacitanceSlider.value);
+            voltageDisplay.textContent = voltage.toFixed(1) + ' V';
+            resistanceDisplay.textContent = resistance.toFixed(1) + ' kΩ';
+            capacitanceDisplay.textContent = capacitance.toFixed(1) + ' µF';
+            mode = 'charge';
+            chargeBtn.classList.add('active');
+            dischargeBtn.classList.remove('active');
+            fullReset();
+            startSimulation();
+        }
+
+        init();
+
+        window.addEventListener('beforeunload', () => {
+            if (intervalId) clearInterval(intervalId);
+        });
+
+    })();
+</script>
+</body>
+</html>

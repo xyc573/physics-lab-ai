@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Atom, BarChart3, Home, Info, Video } from 'lucide-react';
+import { Atom, BarChart3, Bot, Home, Info, Video } from 'lucide-react';
 
 const Header = () => {
   const location = useLocation();
@@ -8,6 +8,7 @@ const Header = () => {
     { path: '/', label: '实验中心', icon: Home },
     { path: '/videos', label: '视频库', icon: Video },
     { path: '/analysis', label: '学习分析', icon: BarChart3 },
+    { path: '/ai-assistant', label: 'AI 答疑', icon: Bot },
     { path: '/about', label: '关于', icon: Info },
   ];
 

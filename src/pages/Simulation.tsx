@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, PlayCircle, Pause, RotateCcw, CheckCircle2 } from 'lucide-react';
 import { getExperimentById } from '../data/experiments';
@@ -25,7 +25,7 @@ import EmfSimulation from '../components/simulation/EmfSimulation';
 import InductionSimulation from '../components/simulation/InductionSimulation';
 import TransformerSimulation from '../components/simulation/TransformerSimulation';
 
-const simulationComponents: Record<string, React.ComponentType<{ params: Record<string, number>; isRunning: boolean; onReset: () => void; onParamChange?: (key: string, value: number) => void }>> = {
+const simulationComponents: Record<string, React.ComponentType<{ params: Record<string, number>; isRunning: boolean; onReset: () => void; onParamChange?: (key: string, value: number) => void; resetCount?: number }>> = {
   spring: SpringSimulation,
   pendulum: PendulumSimulation,
   projectile: ProjectileSimulation,
@@ -62,6 +62,7 @@ const Simulation = () => {
   const [isRunning, setIsRunning] = React.useState(false);
   const [params, setParams] = React.useState<Record<string, number>>({});
   const [hasInteracted, setHasInteracted] = React.useState(false);
+  const [resetCount, setResetCount] = React.useState(0);
   const completeTimeoutRef = React.useRef<ReturnType<typeof setTimeout>>();
 
   React.useEffect(() => {
@@ -82,6 +83,7 @@ const Simulation = () => {
   }
 
   const SimulationComp = simulationComponents[simConfig.type];
+  const isCapacitor = simConfig.type === 'capacitor';
 
   const handleParamChange = (key: string, value: number) => {
     setParams(prev => ({ ...prev, [key]: value }));
@@ -91,11 +93,12 @@ const Simulation = () => {
     }
   };
 
-  const handleReset = () => {
+  const handleReset = useCallback(() => {
     setParams(simConfig.initialParams);
     setIsRunning(false);
     setHasInteracted(true);
-  };
+    setResetCount(c => c + 1);
+  }, [simConfig]);
 
   const handleToggleRun = () => {
     setIsRunning(!isRunning);
@@ -141,6 +144,7 @@ const Simulation = () => {
           <div className="bg-white rounded-2xl shadow-soft overflow-hidden">
             <div className="bg-gradient-to-r from-primary-700 to-primary-800 px-6 py-3 flex items-center justify-between">
               <span className="text-white font-medium">实验台</span>
+              {!isCapacitor && (
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleToggleRun}
@@ -163,16 +167,41 @@ const Simulation = () => {
                   重置
                 </button>
               </div>
+              )}
             </div>
             <div className="bg-gradient-to-b from-slate-100 to-slate-200 p-4 min-h-[500px] flex items-center justify-center">
-              {SimulationComp && params && Object.keys(params).length > 0 && (
-                <SimulationComp params={params} isRunning={isRunning} onReset={handleReset} onParamChange={handleParamChange} />
+              {simConfig.type === 'capacitor' ? (
+                <div className="w-full max-w-[1100px] space-y-3">
+                  <iframe
+                    src="./capacitor-demo.html"
+                    title="电容器充放电模拟"
+                    className="w-full h-[720px] rounded-xl border-0 bg-white shadow-inner"
+                    sandbox="allow-scripts"
+                    allowFullScreen
+                  />
+                  <div className="flex items-center justify-center gap-3">
+                    <button
+                      onClick={() => {
+                        if (!record.simulationCompleted) markSimulationCompleted(id);
+                      }}
+                      className="flex items-center gap-2 px-5 py-2 rounded-lg text-sm font-medium bg-green-600 hover:bg-green-700 text-white transition-all"
+                    >
+                      <CheckCircle2 size={16} />
+                      {record.simulationCompleted ? '已完成' : '完成本次模拟'}
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                SimulationComp && params && Object.keys(params).length > 0 && (
+                  <SimulationComp params={params} isRunning={isRunning} onReset={handleReset} onParamChange={handleParamChange} resetCount={resetCount} />
+                )
               )}
             </div>
           </div>
         </div>
 
         {/* 控制面板 */}
+        {!isCapacitor && (
         <div className="space-y-4">
           <div className="bg-white rounded-2xl shadow-soft p-5">
             <h3 className="font-bold text-primary-700 mb-4 flex items-center gap-2">
@@ -241,6 +270,7 @@ const Simulation = () => {
             )}
           </div>
         </div>
+        )}
       </div>
     </div>
   );

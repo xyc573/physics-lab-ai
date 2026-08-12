@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Send, Bot, User, Sparkles, Lightbulb, Target, BookOpen, ChevronRight } from 'lucide-react';
 import { useLearningStore } from '../store/learningStore';
 import { experiments } from '../data/experiments';
-import { useQuestionStore } from '../data/questions';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -27,8 +26,9 @@ const AIAssistant = () => {
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const totalStats = useLearningStore(state => state.getTotalStats());
-  const { questions } = useQuestionStore();
+  const getTotalStats = useLearningStore(state => state.getTotalStats);
+  const records = useLearningStore(state => state.records);
+  const totalStats = useMemo(() => getTotalStats(), [getTotalStats, records]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -37,6 +37,31 @@ const AIAssistant = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages, isTyping]);
+
+  // 调用 Netlify Function（智谱 GLM 代理）；失败返回 null，由本地规则兜底
+  const callLLM = async (userMessage: string): Promise<string | null> => {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 12000);
+    try {
+      const resp = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: userMessage }],
+        }),
+        signal: controller.signal,
+      });
+      const data = await resp.json();
+      if (resp.ok && data.reply) return data.reply;
+      console.warn('LLM 调用失败:', data.error || resp.status);
+      return null;
+    } catch (err) {
+      console.warn('LLM 请求异常，使用本地规则:', err);
+      return null;
+    } finally {
+      clearTimeout(timer);
+    }
+  };
 
   const generateResponse = (userMessage: string): string => {
     const msg = userMessage.toLowerCase();
@@ -253,38 +278,34 @@ F = ma
 💡 你也可以试试点击下方的快捷问题~`;
   };
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!input.trim() || isTyping) return;
     
-    const userMsg: Message = { role: 'user', content: input.trim() };
+    const question = input.trim();
+    const userMsg: Message = { role: 'user', content: question };
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsTyping(true);
     
-    setTimeout(() => {
-      const response = generateResponse(input.trim());
-      const aiMsg: Message = { role: 'assistant', content: response };
-      setMessages(prev => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 800 + Math.random() * 700);
+    const reply = await callLLM(question);
+    const response = reply ?? generateResponse(question);
+    const aiMsg: Message = { role: 'assistant', content: response };
+    setMessages(prev => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
-  const handleQuickQuestion = (query: string) => {
+  const handleQuickQuestion = async (query: string) => {
     if (isTyping) return;
-    setInput(query);
-    setTimeout(() => {
-      const userMsg: Message = { role: 'user', content: query };
-      setMessages(prev => [...prev, userMsg]);
-      setInput('');
-      setIsTyping(true);
-      
-      setTimeout(() => {
-        const response = generateResponse(query);
-        const aiMsg: Message = { role: 'assistant', content: response };
-        setMessages(prev => [...prev, aiMsg]);
-        setIsTyping(false);
-      }, 800 + Math.random() * 700);
-    }, 100);
+    const userMsg: Message = { role: 'user', content: query };
+    setMessages(prev => [...prev, userMsg]);
+    setInput('');
+    setIsTyping(true);
+
+    const reply = await callLLM(query);
+    const response = reply ?? generateResponse(query);
+    const aiMsg: Message = { role: 'assistant', content: response };
+    setMessages(prev => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {

@@ -8,3 +8,9 @@ dist
 temp-wmf*
 *.zip
 *.wmf
+
+.env
+.env.local
+
+deploy-netlify/
+

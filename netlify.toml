@@ -2,10 +2,11 @@
   command = "npm run build"
   publish = "dist"
 
-[build.environment]
-  NODE_VERSION = "20"
+[functions]
+  directory = "netlify/functions"
 
+# 前端 /api/chat -> Netlify Functions
 [[redirects]]
-  from = "/*"
-  to = "/index.html"
+  from = "/api/chat"
+  to = "/.netlify/functions/chat"
   status = 200

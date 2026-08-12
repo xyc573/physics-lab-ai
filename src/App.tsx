@@ -11,6 +11,7 @@ const Analysis = lazy(() => import("@/pages/Analysis"));
 const QuestionManager = lazy(() => import("@/pages/QuestionManager"));
 const About = lazy(() => import("@/pages/About"));
 const VideoLibrary = lazy(() => import("@/pages/VideoLibrary"));
+const AIAssistant = lazy(() => import("@/pages/AIAssistant"));
 
 export default function App() {
   return (
@@ -34,6 +35,7 @@ export default function App() {
             <Route path="/manager" element={<QuestionManager />} />
             <Route path="/about" element={<About />} />
             <Route path="/videos" element={<VideoLibrary />} />
+            <Route path="/ai-assistant" element={<AIAssistant />} />
           </Route>
         </Routes>
       </Suspense>

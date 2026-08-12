@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import tsconfigPaths from "vite-tsconfig-paths";
 
 // https://vite.dev/config/
-export default defineConfig(({ mode }) => ({
+export default defineConfig(() => ({
   base: './',
   build: {
     sourcemap: false,
@@ -17,13 +17,7 @@ export default defineConfig(({ mode }) => ({
     }
   },
   plugins: [
-    react({
-      babel: {
-        plugins: mode === 'development' ? [
-          'react-dev-locator',
-        ] : [],
-      },
-    }),
+    react(),
     tsconfigPaths(),
   ],
 }))
