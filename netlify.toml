@@ -4,6 +4,11 @@
 
 [functions]
   directory = "netlify/functions"
+  node_bundler = "esbuild"
+
+# 强制 Node 20 运行时（v2 ESM 函数需 Node 18+，AbortSignal.timeout 需 17.3+）
+[build.environment]
+  AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
 
 # 前端 /api/chat -> Netlify Functions
 [[redirects]]
