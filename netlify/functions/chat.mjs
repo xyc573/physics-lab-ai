@@ -69,13 +69,15 @@ export const handler = async (event) => {
         max_tokens: 800,
         stream: false,
       }),
+      signal: AbortSignal.timeout(9000),
     });
 
-    const data = await resp.json();
     if (!resp.ok) {
-      console.error('Zhipu API error:', resp.status, JSON.stringify(data).slice(0, 300));
+      const errText = await resp.text();
+      console.error('Zhipu API error:', resp.status, errText.slice(0, 300));
       return json({ error: '模型服务暂时不可用' }, 502);
     }
+    const data = await resp.json();
 
     const reply = data?.choices?.[0]?.message?.content;
     if (!reply) {
