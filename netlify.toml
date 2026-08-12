@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+# 强制函数 Node 20 运行时（v2 ESM 函数 + AbortSignal.timeout 需要）
+[build.environment]
+  AWS_LAMBDA_JS_RUNTIME = "nodejs20.x"
+
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
