@@ -1,14 +1,14 @@
 // Netlify Function: LLM 答疑代理（智谱 GLM，OpenAI 兼容）
 // 环境变量（在 Netlify 后台 Site settings → Environment variables 配置）：
-//   ZHIPU_API_KEY —— 智谱开放平台 API Key（必填）
-//   LLM_MODEL     —— 模型名，默认 glm-4v-flash
-//   ALLOWED_ORIGIN —— 允许的站点来源（默认同站）
-exports.handler = async (event) => {
+//   ZHIPU_API_KEY   —— 智谱开放平台 API Key（必填）
+//   LLM_MODEL       —— 模型名，默认 glm-4v-flash
+//   ALLOWED_ORIGIN  —— 允许的站点来源（建议设为部署域名）
+export default async (event) => {
   if (event.httpMethod !== 'POST') {
     return { statusCode: 405, body: JSON.stringify({ error: 'Method Not Allowed' }) };
   }
 
-  // Origin 校验：拒绝跨站调用（防止他人盗用额度）
+  // Origin 校验：拒绝跨站调用（防止盗用额度）
   const origin = event.headers.origin || event.headers['x-forwarded-host'] || '';
   const allowedOrigin = process.env.ALLOWED_ORIGIN || '';
   if (origin && allowedOrigin && origin !== allowedOrigin) {
