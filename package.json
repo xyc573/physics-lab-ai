@@ -43,5 +43,8 @@
     "vite": "^6.3.5",
     "vite-plugin-singlefile": "^2.3.3",
     "vite-tsconfig-paths": "^5.1.4"
-  }
+  },
+  "trustedDependencies": [
+    "esbuild"
+  ]
 }
