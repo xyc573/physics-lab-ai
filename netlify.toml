@@ -5,7 +5,6 @@
 [functions]
   directory = "netlify/functions"
   node_bundler = "esbuild"
-  node_version = "20.x"
 
 # 前端 /api/chat -> Netlify Functions
 [[redirects]]
