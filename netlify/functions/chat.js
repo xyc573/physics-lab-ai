@@ -1,15 +1,19 @@
-// Netlify Function (v2/ESM): LLM 答疑代理（智谱 GLM，OpenAI 兼容）
-// 环境变量（Netlify Site settings → Environment variables）：
-//   ZHIPU_API_KEY   —— 智谱开放平台 API Key（必填）
-//   LLM_MODEL       —— 模型名，默认 glm-4v-flash
-//   ALLOWED_ORIGIN  —— 允许的站点来源（建议设为部署域名）
-const json = (data, status = 200) =>
-  new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json; charset=utf-8' },
-  });
+// Netlify Function (v1/CJS): LLM 答疑代理（智谱 GLM，OpenAI 兼容）
+// 环境变量：ZHIPU_API_KEY（必填）、LLM_MODEL、ALLOWED_ORIGIN
+const json = (data, status = 200) => ({
+  statusCode: status,
+  headers: { 'Content-Type': 'application/json; charset=utf-8' },
+  body: JSON.stringify(data),
+});
 
-export const handler = async (event) => {
+// 手动超时（兼容所有 Node 版本）
+const withTimeout = (promise, ms) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error('upstream timeout')), ms)),
+  ]);
+
+exports.handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return json({ error: 'Method Not Allowed' }, 405);
   }
@@ -37,7 +41,8 @@ export const handler = async (event) => {
   const rawMessages = Array.isArray(body.messages) ? body.messages : [];
   const messages = rawMessages
     .filter((m) => m && typeof m.content === 'string' && m.role === 'user')
-    .map((m) => ({ role: 'user', content: m.content.slice(0, 2000) }));
+    .map((m) => ({ role: 'user', content: m.content.slice(0, 2000) }))
+    .slice(0, 20); // 限制消息条数
 
   if (messages.length === 0) {
     return json({ error: 'Empty message' }, 400);
@@ -56,37 +61,49 @@ export const handler = async (event) => {
   ];
 
   try {
-    const resp = await fetch(`${base}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify({
-        model,
-        messages: fullMessages,
-        temperature: 0.7,
-        max_tokens: 800,
-        stream: false,
-      }),
-      signal: AbortSignal.timeout(9000),
-    });
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 9000);
+    let resp;
+    try {
+      resp = await withTimeout(
+        fetch(base + '/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: 'Bearer ' + apiKey,
+          },
+          body: JSON.stringify({
+            model,
+            messages: fullMessages,
+            temperature: 0.7,
+            max_tokens: 800,
+            stream: false,
+          }),
+          signal: controller.signal,
+        }),
+        9000
+      );
+    } finally {
+      clearTimeout(timer);
+    }
 
     if (!resp.ok) {
       const errText = await resp.text();
-      console.error('Zhipu API error:', resp.status, errText.slice(0, 300));
+      console.error('Zhipu API error:', resp.status, String(errText).slice(0, 300));
       return json({ error: '模型服务暂时不可用' }, 502);
     }
     const data = await resp.json();
 
-    const reply = data?.choices?.[0]?.message?.content;
+    const reply = data && data.choices && data.choices[0] && data.choices[0].message
+      ? data.choices[0].message.content
+      : null;
     if (!reply) {
       return json({ error: '模型返回为空' }, 502);
     }
 
     return json({ reply });
   } catch (err) {
-    console.error('LLM proxy error:', err.message);
+    console.error('LLM proxy error:', err && err.message ? err.message : String(err));
     return json({ error: '网络错误，请稍后重试' }, 502);
   }
 };
